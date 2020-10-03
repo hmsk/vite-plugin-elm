@@ -1,0 +1,32 @@
+{
+  "name": "vite-plugin-elm",
+  "version": "1.0.0-rc.1",
+  "description": "Compile Elm with vite",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/hmsk/vite-plugin-elm.git"
+  },
+  "keywords": [
+    "elm",
+    "vite"
+  ],
+  "author": "Kengo Hamasaki <k.hamasaki@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hmsk/vite-plugin-elm/issues"
+  },
+  "homepage": "https://github.com/hmsk/vite-plugin-elm",
+  "dependencies": {
+    "node-elm-compiler": "5.0.5"
+  },
+  "devDependencies": {
+    "vite": "1.0.0-rc.4"
+  },
+  "peerDependencies": {
+    "vite": "^1.0.0-rc.4"
+  }
+}
