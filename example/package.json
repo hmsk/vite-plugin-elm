@@ -1,0 +1,18 @@
+{
+  "name": "vite-plugin-elm-sample",
+  "private": true,
+  "version": "1.0.0",
+  "description": "A sample project to use vite-plugin-elm",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kengo Hamasaki <k.hamasaki@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^1.0.0-rc.4",
+    "vite-plugin-elm": "file:../"
+  }
+}

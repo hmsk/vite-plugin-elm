@@ -16,3 +16,5 @@ export const plugin = (): Plugin => {
     transforms: [transform()]
   }
 }
+
+export default plugin
