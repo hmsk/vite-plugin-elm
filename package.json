@@ -1,12 +1,11 @@
 {
   "name": "vite-plugin-elm",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0-rc.0",
   "description": "Compile Elm with vite",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsc -w -p .",
-    "build": "rm -rf dist && tsc -p .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rm -rf dist && tsc -p ."
   },
   "repository": {
     "type": "git",
