@@ -3,6 +3,9 @@
   "version": "1.0.0-rc.1",
   "description": "Compile Elm with vite",
   "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "tsc -w -p .",
     "build": "rm -rf dist && tsc -p ."
