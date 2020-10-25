@@ -6,7 +6,7 @@ const transform = (): Transform => {
   return {
     test: ({ path }) => path.endsWith('.elm'),
     transform: async ({ path, isBuild }) => {
-      const compiled = await compiler.compileToString([path], { output: '.js', optimize: isBuild, verbose: isBuild })
+      const compiled = await compiler.compileToString([path], { output: '.js', optimize: isBuild, verbose: isBuild, debug: !isBuild })
       return {
         code: `let output = {}; (function () { ${compiled} }).call(output); export default output.Elm;`
       }
