@@ -1,6 +1,8 @@
 import { Plugin, Transform } from 'vite'
 //@ts-ignore
 import compiler from 'node-elm-compiler'
+//@ts-ignore
+import { toESModule } from 'elm-esm'
 
 const transform = (): Transform => {
   return {
@@ -8,7 +10,7 @@ const transform = (): Transform => {
     transform: async ({ path, isBuild }) => {
       const compiled = await compiler.compileToString([path], { output: '.js', optimize: isBuild, verbose: isBuild, debug: !isBuild })
       return {
-        code: `let output = {}; (function () { ${compiled} }).call(output); export default output.Elm;`
+        code: toESModule(compiled)
       }
     }
   }
