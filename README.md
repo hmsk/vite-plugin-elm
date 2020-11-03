@@ -35,4 +35,4 @@ Visit `/example` dir to play with an actual vite project.
 
 ## License
 
-[MIT](https://github.com/hmsk/vite-plugin-elm)
+[MIT](/LICENSE)
