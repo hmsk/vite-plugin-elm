@@ -20,6 +20,19 @@ module.exports = {
 }
 ```
 
+Then you can write
+
+```ts
+import { Elm } from './Hello.elm'
+
+Elm.Hello.init({
+  node: document.getElementById('root'),
+  flags: "Initial Message"
+})
+```
+
+Visit `/example` dir to play with an actual vite project.
+
 ## License
 
 MIT
