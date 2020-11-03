@@ -353,6 +353,8 @@ if (import.meta.hot) {
 }
 `
 
+const trimDebugMessage = (code: string): string => code.replace(/(console\.warn\(\'Compiled in DEBUG mode)/, "// $1")
+
 const transform = (): Transform => {
   return {
     test: ({ path }) => path.endsWith('.elm'),
@@ -360,7 +362,7 @@ const transform = (): Transform => {
       const compiled = await compiler.compileToString([path], { output: '.js', optimize: isBuild, verbose: isBuild, debug: !isBuild })
       const esm = toESModule(compiled)
       return {
-        code: isBuild ? esm : injectHMR(esm)
+        code: isBuild ? esm : trimDebugMessage(injectHMR(esm))
       }
     }
   }
