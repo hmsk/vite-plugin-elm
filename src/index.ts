@@ -4,7 +4,7 @@ import compiler from 'node-elm-compiler'
 //@ts-ignore
 import { toESModule } from 'elm-esm'
 
-const injectHMR = (compiledESM: string): string => `
+const injectHMR = (compiledESM: string, dependencies: string[]): string => `
 ${compiledESM}
 
 /* This HMR code is heavily basing on elm-hot by Keith Lazuka which is published under the MIT License
@@ -360,9 +360,10 @@ const transform = (): Transform => {
     test: ({ path }) => path.endsWith('.elm'),
     transform: async ({ path, isBuild }) => {
       const compiled = await compiler.compileToString([path], { output: '.js', optimize: isBuild, verbose: isBuild, debug: !isBuild })
+      const dependencies = await compiler.findAllDependencies(path)
       const esm = toESModule(compiled)
       return {
-        code: isBuild ? esm : trimDebugMessage(injectHMR(esm))
+        code: isBuild ? esm : trimDebugMessage(injectHMR(esm , dependencies))
       }
     }
   }

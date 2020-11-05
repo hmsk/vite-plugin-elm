@@ -3,6 +3,7 @@ module Hello exposing (main)
 import Browser
 import Html exposing (Html, text, div)
 import Html.Events exposing (onClick)
+import Message exposing (importableMessage)
 
 main : Program String Model Msg
 main = Browser.element
@@ -30,7 +31,10 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [onClick (Name "Woooo")] [text model.message]
+    div []
+    [ div [onClick (Name "Woooo")] [text model.message]
+    , div [] [text importableMessage]
+    ]
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
