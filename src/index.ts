@@ -50,6 +50,10 @@ if (import.meta.hot) {
   let swappingInstance = null
 
   import.meta.hot.accept()
+  import.meta.hot.acceptDeps([
+    "${dependencies.join(",")}"
+  ], () => { console.log("[vite-elm-plugin] Dependency is updated") })
+
   import.meta.hot.dispose((data) => {
     data.instances = instances
     data.uid = uid
@@ -359,7 +363,12 @@ const transform = (): Transform => {
   return {
     test: ({ path }) => path.endsWith('.elm'),
     transform: async ({ path, isBuild }) => {
-      const compiled = await compiler.compileToString([path], { output: '.js', optimize: isBuild, verbose: isBuild, debug: !isBuild })
+      let compiled
+      try {
+        compiled = await compiler.compileToString([path], { output: '.js', optimize: isBuild, verbose: isBuild, debug: !isBuild })
+      } catch (e) {
+        console.log('hi')
+      }
       const dependencies = await compiler.findAllDependencies(path)
       const esm = toESModule(compiled)
       return {
