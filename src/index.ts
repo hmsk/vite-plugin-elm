@@ -1,4 +1,5 @@
 import { Plugin, Transform } from 'vite'
+import { relative } from 'path'
 //@ts-ignore
 import compiler from 'node-elm-compiler'
 //@ts-ignore
@@ -358,21 +359,21 @@ if (import.meta.hot) {
 `
 
 const trimDebugMessage = (code: string): string => code.replace(/(console\.warn\(\'Compiled in DEBUG mode)/, "// $1")
+const viteProjectPath = (dependency: string) => `/${relative(process.cwd(), dependency)}`
 
 const transform = (): Transform => {
   return {
     test: ({ path }) => path.endsWith('.elm'),
     transform: async ({ path, isBuild }) => {
-      let compiled
       try {
-        compiled = await compiler.compileToString([path], { output: '.js', optimize: isBuild, verbose: isBuild, debug: !isBuild })
+        const compiled = await compiler.compileToString([path], { output: '.js', optimize: isBuild, verbose: isBuild, debug: !isBuild })
+        const esm = toESModule(compiled)
+        const dependencies: string[] = (await compiler.findAllDependencies(path))
+        const relativePaths = dependencies.map(viteProjectPath)
+        return { code: isBuild ? esm : trimDebugMessage(injectHMR(esm , relativePaths)) }
       } catch (e) {
-        console.log('hi')
-      }
-      const dependencies = await compiler.findAllDependencies(path)
-      const esm = toESModule(compiled)
-      return {
-        code: isBuild ? esm : trimDebugMessage(injectHMR(esm , dependencies))
+        console.error(e)
+        return { code: `console.error('[vite-plugin-elm] ${viteProjectPath(path)}:', \`${e.message.replace(/\`/g, '\\\`')}\`)` }
       }
     }
   }
