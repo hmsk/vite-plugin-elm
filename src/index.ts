@@ -372,8 +372,12 @@ const transform = (): Transform => {
         const relativePaths = dependencies.map(viteProjectPath)
         return { code: isBuild ? esm : trimDebugMessage(injectHMR(esm , relativePaths)) }
       } catch (e) {
-        console.error(e)
-        return { code: `console.error('[vite-plugin-elm] ${viteProjectPath(path)}:', \`${e.message.replace(/\`/g, '\\\`')}\`)` }
+        if (!e.message.includes("-- NO MAIN")) {
+          console.error(e)
+          return { code: `console.error('[vite-plugin-elm] ${viteProjectPath(path)}:', \`${e.message.replace(/\`/g, '\\\`')}\`)` }
+        } else {
+          return { code: `console.log('[vite-plugin-elm] ${viteProjectPath(path)}:', 'NO MAIN .elm file is requested to transform by vite. Probably, this file is just a depending module')` }
+        }
       }
     }
   }
