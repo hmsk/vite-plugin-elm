@@ -31,7 +31,16 @@ Elm.Hello.init({
 })
 ```
 
-Visit `/example` dir to play with an actual vite project.
+Visit `/example` dir to play with an actual vite project. And [this working website](https://github.com/hmsk/hmsk.me) may help you to learn how to use.
+
+### HMR
+
+Works excepting HMR by saving depending modules (It'll be fixed when https://github.com/vitejs/vite/pull/1018 is merged).
+
+## Acknowledgement
+
+- [klazuka/elm-hot](https://github.com/klazuka/elm-hot) for a helpful referrence of the HMR implementation
+- [ChristophP/elm-esm](https://github.com/ChristophP/elm-esm/issues/2) for publishing IIFE -> ESM logic
 
 ## License
 
