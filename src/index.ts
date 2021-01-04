@@ -1,4 +1,4 @@
-import { Plugin, Transform } from 'vite'
+import { Plugin } from 'vite'
 import { relative } from 'path'
 //@ts-ignore
 import compiler from 'node-elm-compiler'
@@ -50,8 +50,10 @@ if (import.meta.hot) {
   let initializingInstance = null
   let swappingInstance = null
 
-  import.meta.hot.accept()
-  import.meta.hot.acceptDeps([
+  import.meta.hot.accept((newModule) => {
+    console.log('accept', newModule)
+  })
+  import.meta.hot.accept([
     "${dependencies.join(",")}"
   ], () => { console.log("[vite-elm-plugin] Dependency is updated") })
 
@@ -358,34 +360,37 @@ if (import.meta.hot) {
 }
 `
 
-const trimDebugMessage = (code: string): string => code.replace(/(console\.warn\(\'Compiled in DEBUG mode)/, "// $1")
+const trimDebugMessage = (code: string): string => code.replace(/(console\.warn\(\'Compiled in DEBUG mode)/, '// $1')
 const viteProjectPath = (dependency: string) => `/${relative(process.cwd(), dependency)}`
-
-const transform = (): Transform => {
-  return {
-    test: ({ path }) => path.endsWith('.elm'),
-    transform: async ({ path, isBuild }) => {
-      try {
-        const compiled = await compiler.compileToString([path], { output: '.js', optimize: isBuild, verbose: isBuild, debug: !isBuild })
-        const esm = toESModule(compiled)
-        const dependencies: string[] = (await compiler.findAllDependencies(path))
-        const relativePaths = dependencies.map(viteProjectPath)
-        return { code: isBuild ? esm : trimDebugMessage(injectHMR(esm , relativePaths)) }
-      } catch (e) {
-        if (!e.message.includes("-- NO MAIN")) {
-          console.error(e)
-          return { code: `console.error('[vite-plugin-elm] ${viteProjectPath(path)}:', \`${e.message.replace(/\`/g, '\\\`')}\`)` }
-        } else {
-          return { code: `console.log('[vite-plugin-elm] ${viteProjectPath(path)}:', 'NO MAIN .elm file is requested to transform by vite. Probably, this file is just a depending module')` }
-        }
-      }
-    }
-  }
-}
 
 export const plugin = (): Plugin => {
   return {
-    transforms: [transform()]
+    name: 'elm-plugin',
+    load (id) {
+      if (/\.elm$/.test(id)) {
+        return 'ELM' // guard from other plugins
+      }
+      return null
+    },
+    async transform (code, id) {
+      const isBuild = process.env.NODE_ENV === 'production'
+      if (code === 'ELM') {
+        try {
+          const compiled = await compiler.compileToString([id], { output: '.js', optimize: isBuild, verbose: isBuild, debug: !isBuild })
+          const dependencies = await compiler.findAllDependencies(id)
+          const esm = toESModule(compiled)
+          const relativePaths = dependencies.map(viteProjectPath)
+          return { code: isBuild ? esm : trimDebugMessage(injectHMR(esm, relativePaths)), map: null }
+        } catch (e) {
+          if (!e.message.includes('-- NO MAIN')) {
+            console.error(e)
+            return { code: `console.error('[vite-plugin-elm] ${viteProjectPath(id)}:', \`${e.message.replace(/\`/g, '\\\`')}\`)` }
+          } else {
+            return { code: `console.log('[vite-plugin-elm] ${viteProjectPath(id)}:', 'NO MAIN .elm file is requested to transform by vite. Probably, this file is just a depending module')` }
+          }
+        }
+      }
+    }
   }
 }
 
