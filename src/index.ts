@@ -365,16 +365,11 @@ const viteProjectPath = (dependency: string) => `/${relative(process.cwd(), depe
 
 export const plugin = (): Plugin => {
   return {
-    name: 'elm-plugin',
-    load (id) {
-      if (/\.elm$/.test(id)) {
-        return 'ELM' // guard from other plugins
-      }
-      return null
-    },
+    name: 'vite-plugin-elm',
+    enforce: 'pre',
     async transform (code, id) {
       const isBuild = process.env.NODE_ENV === 'production'
-      if (code === 'ELM') {
+      if (id.endsWith('.elm')) {
         try {
           const compiled = await compiler.compileToString([id], { output: '.js', optimize: isBuild, verbose: isBuild, debug: !isBuild })
           const dependencies = await compiler.findAllDependencies(id)
