@@ -1,6 +1,6 @@
 # vite-plugin-elm
 
-[![npm](https://img.shields.io/npm/v/vite-plugin-elm.svg?style=for-the-badge)](https://www.npmjs.com/package/vite-plugin-elm)
+[![npm](https://img.shields.io/npm/v/vite-plugin-elm.svg?style=for-the-badge)](https://www.npmjs.com/package/vite-plugin-elm) [![npm](https://img.shields.io/npm/v/vite-plugin-elm/vite-1.svg?style=for-the-badge)](https://www.npmjs.com/package/vite-plugin-elm)
 
 A plugin enables you to import a Markdown file as various formats on your [vite](https://github.com/vitejs/vite) project.
 
@@ -9,6 +9,15 @@ A plugin enables you to import a Markdown file as various formats on your [vite]
 ```
 npx i -D vite-plugin-elm
 ```
+
+<details>
+  <summary>For vite v1</summary>
+
+```
+npx i -D vite-plugin-elm@vite-1
+```
+
+</details>
 
 Update `vite.config.(js|ts)`
 
