@@ -50,11 +50,9 @@ if (import.meta.hot) {
   let initializingInstance = null
   let swappingInstance = null
 
-  import.meta.hot.accept((newModule) => {
-    console.log('accept', newModule)
-  })
+  import.meta.hot.accept()
   import.meta.hot.accept([
-    "${dependencies.join(",")}"
+    "${dependencies.join("\", \"")}"
   ], () => { console.log("[vite-elm-plugin] Dependency is updated") })
 
   import.meta.hot.dispose((data) => {
@@ -374,8 +372,7 @@ export const plugin = (): Plugin => {
           const compiled = await compiler.compileToString([id], { output: '.js', optimize: isBuild, verbose: isBuild, debug: !isBuild })
           const dependencies = await compiler.findAllDependencies(id)
           const esm = toESModule(compiled)
-          const relativePaths = dependencies.map(viteProjectPath)
-          return { code: isBuild ? esm : trimDebugMessage(injectHMR(esm, relativePaths)), map: null }
+          return { code: isBuild ? esm : trimDebugMessage(injectHMR(esm, dependencies.map(viteProjectPath))), map: null }
         } catch (e) {
           if (!e.message.includes('-- NO MAIN')) {
             console.error(e)
