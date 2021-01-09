@@ -12,7 +12,7 @@
   "author": "Kengo Hamasaki <k.hamasaki@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "vite": "2.0.0-beta.4",
+    "vite": "2.0.0-beta.15",
     "vite-plugin-elm": "file:../"
   }
 }
