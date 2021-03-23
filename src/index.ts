@@ -268,7 +268,7 @@ if (import.meta.hot) {
     const hookedInit = (args) => {
       const initialStateTuple = init(args)
       if (swappingInstance) {
-        const oldModel = swappingInstance.lastState
+        let oldModel = swappingInstance.lastState
         const newModel = initialStateTuple.a
 
         if (typeof elmSymbol("elm$browser$Browser$application") !== "undefined") {
