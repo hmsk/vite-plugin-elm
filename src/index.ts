@@ -256,7 +256,7 @@ if (import.meta.hot) {
 
   const getAt = (keyPath, obj) => keyPath.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, obj)
   const removeNavKeyListeners = (navKey) => {
-    window.removeEventListener("popstate", navKey,value)
+    window.removeEventListener("popstate", navKey.value)
     window.navigator.userAgent.indexOf("Trident") < 0 || window.removeEventListener("hashchange", navKey.value)
   }
 
@@ -278,7 +278,9 @@ if (import.meta.hot) {
           if (newKeyLoc === null) {
             error = "could not find Browser.Navigation.Key in the new app model"
           } else if (oldKeyLoc === null) {
-            error = "the location of the Browser.Navigation.Key in the model has changed."
+            error = "could not find Browser.Navigation.Key in the old app model"
+          } else if (newKeyLoc.keypath.toString() !== oldKeyLoc.keypath.toString()) {
+            error = "the location of the Browser.Navigation.Key in the model has changed.";
           } else {
             removeNavKeyListeners(oldKeyLoc.value)
             const parentKeyPath = oldKeyLoc.keypath.slice(0, -1)
