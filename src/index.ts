@@ -81,7 +81,7 @@ if (import.meta.hot) {
       if ('init' in child) {
         modules.push({ path: currentPath, module: child })
       } else {
-        modules = { ...modules, ...findPublicModules(child, currentPath) }
+        modules = [ ...modules, ...findPublicModules(child, currentPath) ]
       }
     })
     return modules
