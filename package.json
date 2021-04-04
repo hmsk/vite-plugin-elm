@@ -19,6 +19,9 @@
     "vite"
   ],
   "author": "Kengo Hamasaki <k.hamasaki@gmail.com>",
+  "contributors": [
+    "James Birtles <jamesb@airca.st>"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/hmsk/vite-plugin-elm/issues"
