@@ -369,6 +369,17 @@ export const plugin = (): Plugin => {
   return {
     name: 'vite-plugin-elm',
     enforce: 'pre',
+    handleHotUpdate(ctx) {
+      if (!ctx.file.endsWith('.elm')) return
+      let ignoreThisFile = false
+      compilableFiles.forEach((dependencies, file) => {
+        if (dependencies.has(ctx.file)) {
+          console.log(`[vite-plugin-elm] ${viteProjectPath(ctx.file)} was changed -> recompile ${viteProjectPath(file)}.`)
+          ignoreThisFile = true
+        }
+      })
+      return ignoreThisFile ? [] : ctx.modules
+    },
     async transform (_code, id) {
       const isBuild = process.env.NODE_ENV === 'production'
       if (id.endsWith('.elm')) {
