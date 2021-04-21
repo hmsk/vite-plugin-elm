@@ -364,6 +364,8 @@ const trimDebugMessage = (code: string): string => code.replace(/(console\.warn\
 const viteProjectPath = (dependency: string) => `/${relative(process.cwd(), dependency)}`
 
 export const plugin = (): Plugin => {
+  const compilableFiles : Map<string, Set<string>> = new Map()
+
   return {
     name: 'vite-plugin-elm',
     enforce: 'pre',
@@ -373,9 +375,11 @@ export const plugin = (): Plugin => {
         try {
           const compiled = await compiler.compileToString([id], { output: '.js', optimize: isBuild, verbose: isBuild, debug: !isBuild })
           const dependencies = await compiler.findAllDependencies(id)
+          compilableFiles.set(id, new Set(dependencies))
           const esm = toESModule(compiled)
           return { code: isBuild ? esm : trimDebugMessage(injectHMR(esm, dependencies.map(viteProjectPath))), map: null }
         } catch (e) {
+          compilableFiles.delete(id)
           if (!e.message.includes('-- NO MAIN')) {
             console.error(e)
             return { code: `console.error('[vite-plugin-elm] ${viteProjectPath(id)}:', \`${e.message.replace(/\`/g, '\\\`')}\`)` }
