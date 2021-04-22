@@ -1,10 +1,9 @@
-import { Plugin } from 'vite'
+import { Plugin, ModuleNode } from 'vite'
 import { relative } from 'path'
 //@ts-ignore
 import compiler from 'node-elm-compiler'
 //@ts-ignore
 import { toESModule } from 'elm-esm'
-import { utimes } from 'fs/promises'
 
 const injectHMR = (compiledESM: string, dependencies: string[]): string => `
 ${compiledESM}
@@ -372,18 +371,18 @@ export const plugin = (): Plugin => {
     enforce: 'pre',
     handleHotUpdate(ctx) {
       if (!ctx.file.endsWith('.elm')) return
-      let ignoreThisFile = false
+      let modulesToCompile: ModuleNode[] | undefined = undefined
       compilableFiles.forEach((dependencies, file) => {
         if (dependencies.has(ctx.file)) {
           console.log(`[vite-plugin-elm] ${viteProjectPath(ctx.file)} was changed -> recompile ${viteProjectPath(file)}.`)
-          ignoreThisFile = true
-          // This is a workaround, maybe there is a better way to make vite compile the file?
-          utimes(file, Date.now(), Date.now()).catch(reason => {
-            console.error(`[vite-plugin-elm] error: Could not mark ${file} as modified:`, reason)
-          })
+          const module = ctx.server.moduleGraph.getModuleById(file)
+          if (!modulesToCompile) modulesToCompile = []
+          if (module) {
+            modulesToCompile.push(module);
+          }
         }
       })
-      return ignoreThisFile ? [] : ctx.modules
+      return modulesToCompile ?? ctx.modules
     },
     async transform (_code, id) {
       const isBuild = process.env.NODE_ENV === 'production'
