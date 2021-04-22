@@ -4,6 +4,7 @@ import { relative } from 'path'
 import compiler from 'node-elm-compiler'
 //@ts-ignore
 import { toESModule } from 'elm-esm'
+import { utimes } from 'fs/promises'
 
 const injectHMR = (compiledESM: string, dependencies: string[]): string => `
 ${compiledESM}
@@ -376,6 +377,10 @@ export const plugin = (): Plugin => {
         if (dependencies.has(ctx.file)) {
           console.log(`[vite-plugin-elm] ${viteProjectPath(ctx.file)} was changed -> recompile ${viteProjectPath(file)}.`)
           ignoreThisFile = true
+          // This is a workaround, maybe there is a better way to make vite compile the file?
+          utimes(file, Date.now(), Date.now()).catch(reason => {
+            console.error(`[vite-plugin-elm] error: Could not mark ${file} as modified:`, reason)
+          })
         }
       })
       return ignoreThisFile ? [] : ctx.modules
