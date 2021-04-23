@@ -1,4 +1,4 @@
-import { Plugin } from 'vite'
+import { Plugin, ModuleNode } from 'vite'
 import { relative } from 'path'
 //@ts-ignore
 import compiler from 'node-elm-compiler'
@@ -364,18 +364,37 @@ const trimDebugMessage = (code: string): string => code.replace(/(console\.warn\
 const viteProjectPath = (dependency: string) => `/${relative(process.cwd(), dependency)}`
 
 export const plugin = (): Plugin => {
+  const compilableFiles : Map<string, Set<string>> = new Map()
+
   return {
     name: 'vite-plugin-elm',
     enforce: 'pre',
+    handleHotUpdate(ctx) {
+      if (!ctx.file.endsWith('.elm')) return
+      let modulesToCompile: ModuleNode[] | undefined = undefined
+      compilableFiles.forEach((dependencies, file) => {
+        if (dependencies.has(ctx.file)) {
+          console.log(`[vite-plugin-elm] ${viteProjectPath(ctx.file)} was changed -> recompile ${viteProjectPath(file)}.`)
+          const module = ctx.server.moduleGraph.getModuleById(file)
+          if (!modulesToCompile) modulesToCompile = []
+          if (module) {
+            modulesToCompile.push(module);
+          }
+        }
+      })
+      return modulesToCompile ?? ctx.modules
+    },
     async transform (_code, id) {
       const isBuild = process.env.NODE_ENV === 'production'
       if (id.endsWith('.elm')) {
         try {
           const compiled = await compiler.compileToString([id], { output: '.js', optimize: isBuild, verbose: isBuild, debug: !isBuild })
           const dependencies = await compiler.findAllDependencies(id)
+          compilableFiles.set(id, new Set(dependencies))
           const esm = toESModule(compiled)
           return { code: isBuild ? esm : trimDebugMessage(injectHMR(esm, dependencies.map(viteProjectPath))), map: null }
         } catch (e) {
+          compilableFiles.delete(id)
           if (!e.message.includes('-- NO MAIN')) {
             console.error(e)
             return { code: `console.error('[vite-plugin-elm] ${viteProjectPath(id)}:', \`${e.message.replace(/\`/g, '\\\`')}\`)` }
