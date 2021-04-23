@@ -385,22 +385,21 @@ export const plugin = (): Plugin => {
       return modulesToCompile ?? ctx.modules
     },
     async transform (_code, id) {
+      if (!id.endsWith('.elm')) return
       const isBuild = process.env.NODE_ENV === 'production'
-      if (id.endsWith('.elm')) {
-        try {
-          const compiled = await compiler.compileToString([id], { output: '.js', optimize: isBuild, verbose: isBuild, debug: !isBuild })
-          const dependencies = await compiler.findAllDependencies(id)
-          compilableFiles.set(id, new Set(dependencies))
-          const esm = toESModule(compiled)
-          return { code: isBuild ? esm : trimDebugMessage(injectHMR(esm, dependencies.map(viteProjectPath))), map: null }
-        } catch (e) {
-          compilableFiles.delete(id)
-          if (!e.message.includes('-- NO MAIN')) {
-            console.error(e)
-            return { code: `console.error('[vite-plugin-elm] ${viteProjectPath(id)}:', \`${e.message.replace(/\`/g, '\\\`')}\`)` }
-          } else {
-            return { code: `console.log('[vite-plugin-elm] ${viteProjectPath(id)}:', 'NO MAIN .elm file is requested to transform by vite. Probably, this file is just a depending module')` }
-          }
+      try {
+        const compiled = await compiler.compileToString([id], { output: '.js', optimize: isBuild, verbose: isBuild, debug: !isBuild })
+        const dependencies = await compiler.findAllDependencies(id)
+        compilableFiles.set(id, new Set(dependencies))
+        const esm = toESModule(compiled)
+        return { code: isBuild ? esm : trimDebugMessage(injectHMR(esm, dependencies.map(viteProjectPath))), map: null }
+      } catch (e) {
+        compilableFiles.delete(id)
+        if (!e.message.includes('-- NO MAIN')) {
+          console.error(e)
+          return { code: `console.error('[vite-plugin-elm] ${viteProjectPath(id)}:', \`${e.message.replace(/\`/g, '\\\`')}\`)` }
+        } else {
+          return { code: `console.log('[vite-plugin-elm] ${viteProjectPath(id)}:', 'NO MAIN .elm file is requested to transform by vite. Probably, this file is just a depending module')` }
         }
       }
     }
