@@ -55,6 +55,10 @@ if (import.meta.hot) {
     "${dependencies.join("\", \"")}"
   ], () => { console.log("[vite-elm-plugin] Dependency is updated") })
 
+  import.meta.hot.on('hot-update-dependents', (data) => {
+    console.log("[vite-plugin-elm] Request to hot update dependents: " + data.join(", "))
+  })
+
   import.meta.hot.dispose((data) => {
     data.instances = instances
     data.uid = uid
@@ -364,25 +368,31 @@ const trimDebugMessage = (code: string): string => code.replace(/(console\.warn\
 const viteProjectPath = (dependency: string) => `/${relative(process.cwd(), dependency)}`
 
 export const plugin = (): Plugin => {
-  const compilableFiles : Map<string, Set<string>> = new Map()
+  const compilableFiles: Map<string, Set<string>> = new Map()
 
   return {
     name: 'vite-plugin-elm',
     enforce: 'pre',
-    handleHotUpdate(ctx) {
-      if (!ctx.file.endsWith('.elm')) return
-      let modulesToCompile: ModuleNode[] | undefined = undefined
-      compilableFiles.forEach((dependencies, file) => {
-        if (dependencies.has(ctx.file)) {
-          console.log(`[vite-plugin-elm] ${viteProjectPath(ctx.file)} was changed -> recompile ${viteProjectPath(file)}.`)
-          const module = ctx.server.moduleGraph.getModuleById(file)
-          if (!modulesToCompile) modulesToCompile = []
-          if (module) {
-            modulesToCompile.push(module);
-          }
+    handleHotUpdate({ file, server, modules }) {
+      if (!file.endsWith('.elm')) return
+      const modulesToCompile: ModuleNode[] = []
+      compilableFiles.forEach((dependencies, compilableFile) => {
+        if (dependencies.has(file)) {
+          const module = server.moduleGraph.getModuleById(compilableFile)
+          if (module) modulesToCompile.push(module)
         }
       })
-      return modulesToCompile ?? ctx.modules
+
+      if (modulesToCompile.length > 0) {
+        server.ws.send({
+          type: 'custom',
+          event: 'hot-update-dependents',
+          data: modulesToCompile.map(({ url }) => url)
+        })
+        return modulesToCompile
+      } else {
+        return modules
+      }
     },
     async transform (_code, id) {
       if (!id.endsWith('.elm')) return
