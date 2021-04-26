@@ -245,7 +245,7 @@ if (import.meta.hot) {
     while (queue.length !== 0) {
       const item = queue.shift()
       if (typeof item.value === "undefined" || item.value === null) continue
-      if (item.value.hasOwnProperty("elm-hot-nav-key")) return item
+      if (typeof item.value === 'function' && item.value.hasOwnProperty("name") && item.value.name === 'key') return item
       if (typeof item.value !== "object") continue
 
       for (const propName in item.value) {
