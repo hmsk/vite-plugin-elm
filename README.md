@@ -1,8 +1,8 @@
 # vite-plugin-elm
 
-[![npm](https://img.shields.io/npm/v/vite-plugin-elm.svg?style=for-the-badge)](https://www.npmjs.com/package/vite-plugin-elm) [![npm](https://img.shields.io/npm/v/vite-plugin-elm/vite-1.svg?style=for-the-badge)](https://www.npmjs.com/package/vite-plugin-elm/v/vite-1)
+[![npm](https://img.shields.io/npm/v/vite-plugin-elm.svg?style=for-the-badge)](https://www.npmjs.com/package/vite-plugin-elm)
 
-A plugin enables you to compile an Elm [application](https://package.elm-lang.org/packages/elm/browser/latest/Browser#application)/[document](https://package.elm-lang.org/packages/elm/browser/latest/Browser#element)/[element](https://package.elm-lang.org/packages/elm/browser/latest/Browser#element) on your [vite](https://github.com/vitejs/vite) project.
+A plugin enables you to compile an Elm [application](https://package.elm-lang.org/packages/elm/browser/latest/Browser#application)/[document](https://package.elm-lang.org/packages/elm/browser/latest/Browser#document)/[element](https://package.elm-lang.org/packages/elm/browser/latest/Browser#element) on your [vite](https://github.com/vitejs/vite) project. [Hot module replacement](https://vitejs.dev/guide/features.html#hot-module-replacement) works roughly in development.
 
 ```ts
 import { Elm } from './MyApplication.elm'
@@ -15,15 +15,6 @@ Elm.MyApplication.init();
 ```
 npx i -D vite-plugin-elm
 ```
-
-<details>
-  <summary>For vite v1</summary>
-
-```
-npx i -D vite-plugin-elm@vite-1
-```
-
-</details>
 
 Update `vite.config.(js|ts)`
 
