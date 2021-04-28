@@ -402,7 +402,11 @@ export const plugin = (): Plugin => {
         const dependencies = await compiler.findAllDependencies(id)
         compilableFiles.set(id, new Set(dependencies))
         const esm = toESModule(compiled)
-        return { code: isBuild ? esm : trimDebugMessage(injectHMR(esm, dependencies.map(viteProjectPath))), map: null }
+
+        const hotFixForMissingKey = 'function() { key.a(onUrlChange(_Browser_getUrl())); };'
+        const replaced = !isBuild && esm.includes('elm$browser$Browser$application') ? esm.replace(hotFixForMissingKey, `${hotFixForMissingKey}\n\tkey['elm-hot-nav-key'] = true;\n`) : esm
+
+        return { code: isBuild ? esm : trimDebugMessage(injectHMR(replaced, dependencies.map(viteProjectPath))), map: null }
       } catch (e) {
         compilableFiles.delete(id)
         if (!e.message.includes('-- NO MAIN')) {
