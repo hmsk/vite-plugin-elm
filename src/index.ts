@@ -275,7 +275,7 @@ if (import.meta.hot) {
         let oldModel = swappingInstance.lastState
         const newModel = initialStateTuple.a
 
-        if (typeof elmSymbol("elm$browser$Browser$application") !== "undefined") {
+        if (typeof elmSymbol("elm$browser$Browser$application") !== "undefined" && typeof elmSymbol("elm$browser$Browser$Navigation") !== "undefined") {
           const oldKeyLoc = findNavKey(oldModel)
           const newKeyLoc = findNavKey(newModel)
           let error = null
