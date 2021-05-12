@@ -174,7 +174,7 @@ if (import.meta.hot) {
       Object.keys(instance.portSends).forEach((portName) => {
         if (portName in elm.ports && 'send' in elm.ports[portName]) {
           console.log("[vite-plugin-elm] Replace old port send with the new send")
-          instance.portSend[portName] = elm.ports[portName].send
+          instance.portSends[portName] = elm.ports[portName].send
         } else {
           delete instance.portSends[portName]
           console.log("[vite-plugin-elm] Port was removed:", portName)
