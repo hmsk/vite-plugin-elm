@@ -1,7 +1,7 @@
 {
   "name": "vite-plugin-elm-sample",
   "private": true,
-  "version": "2.0.0",
+  "version": "2.1.3",
   "description": "A sample project to use vite-plugin-elm",
   "main": "index.js",
   "scripts": {
@@ -12,7 +12,7 @@
   "author": "Kengo Hamasaki <k.hamasaki@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "vite": "2.1.2",
+    "vite": "2.3.2",
     "vite-plugin-elm": "file:../"
   }
 }
