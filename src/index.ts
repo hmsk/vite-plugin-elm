@@ -411,7 +411,7 @@ export const plugin = (): Plugin => {
         compilableFiles.delete(id)
         if (!e.message.includes('-- NO MAIN')) {
           console.error(e)
-          return { code: `console.error('[vite-plugin-elm] ${viteProjectPath(id)}:', \`${e.message.replace(/\`/g, '\\\`')}\`)` }
+          throw e
         } else {
           return { code: `console.log('[vite-plugin-elm] ${viteProjectPath(id)}:', 'NO MAIN .elm file is requested to transform by vite. Probably, this file is just a depending module')` }
         }
