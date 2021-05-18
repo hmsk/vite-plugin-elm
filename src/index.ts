@@ -409,11 +409,13 @@ export const plugin = (): Plugin => {
         return { code: isBuild ? esm : trimDebugMessage(injectHMR(replaced, dependencies.map(viteProjectPath))), map: null }
       } catch (e) {
         compilableFiles.delete(id)
-        if (!e.message.includes('-- NO MAIN')) {
+        if (e.message.includes('-- NO MAIN')) {
+          const message = `${viteProjectPath(id)}: NO MAIN .elm file is requested to transform by vite. Probably, this file is just a depending module`
+          console.error(message)
+          throw message
+        } else {
           console.error(e)
           throw e
-        } else {
-          return { code: `console.log('[vite-plugin-elm] ${viteProjectPath(id)}:', 'NO MAIN .elm file is requested to transform by vite. Probably, this file is just a depending module')` }
         }
       }
     }
