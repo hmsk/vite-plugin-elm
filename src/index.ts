@@ -368,11 +368,19 @@ const trimDebugMessage = (code: string): string => code.replace(/(console\.warn\
 const viteProjectPath = (dependency: string) => `/${relative(process.cwd(), dependency)}`
 
 export const plugin = (): Plugin => {
+
+  var server
   const compilableFiles: Map<string, Set<string>> = new Map()
 
   return {
     name: 'vite-plugin-elm',
     enforce: 'pre',
+    
+    configureServer(_server) {
+      // make server available to other plugin methods
+      server = _server
+    },
+
     handleHotUpdate({ file, server, modules }) {
       if (!file.endsWith('.elm')) return
       const modulesToCompile: ModuleNode[] = []
@@ -397,9 +405,26 @@ export const plugin = (): Plugin => {
     async transform (_code, id) {
       if (!id.endsWith('.elm')) return
       const isBuild = process.env.NODE_ENV === 'production'
+      const dependencies = await compiler.findAllDependencies(id)
+      
+      // add dependent elm modules to list of files that trigger the compilation when changed
+      if (server) {
+          const { moduleGraph } = server
+          const thisModule = moduleGraph.getModuleById(id)
+
+          const depModules = new Set(
+              dependencies.map((file) => moduleGraph.createFileOnlyEntry(file))
+            )
+
+          moduleGraph.updateModuleInfo(
+              thisModule,
+              depModules,
+              new Set()
+        )
+      }
+      
       try {
         const compiled = await compiler.compileToString([id], { output: '.js', optimize: isBuild, verbose: isBuild, debug: !isBuild })
-        const dependencies = await compiler.findAllDependencies(id)
         compilableFiles.set(id, new Set(dependencies))
         const esm = toESModule(compiled)
 
