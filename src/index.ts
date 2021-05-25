@@ -372,12 +372,16 @@ export const plugin = (opts : { debug: boolean }): Plugin => {
 
   // Enable/disable elm debugger
   let debug : boolean
-  if ((typeof opts !== "undefined") && (typeof opts.debug !== "undefined")) {
-    // User setting
-    debug = opts.debug
+  if (process.env.NODE_ENV === 'production') {
+    // Off in production mode
+    debug = false
   } else {
-    // Environment fallback
-    debug = process.env.NODE_ENV !== 'production'
+    // On/Off in development mode
+    if ((typeof opts !== "undefined") && (typeof opts.debug !== "undefined")) {
+      debug = opts.debug
+    } else {
+      debug = true
+    }
   }
 
   return {
