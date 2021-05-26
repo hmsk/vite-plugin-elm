@@ -1,4 +1,4 @@
-const { plugin } = require('vite-plugin-elm')
+import { plugin } from 'vite-plugin-elm'
 
 const config = {
   plugins: [plugin()]
