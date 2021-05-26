@@ -367,8 +367,19 @@ if (import.meta.hot) {
 const trimDebugMessage = (code: string): string => code.replace(/(console\.warn\(\'Compiled in DEBUG mode)/, '// $1')
 const viteProjectPath = (dependency: string) => `/${relative(process.cwd(), dependency)}`
 
-export const plugin = (): Plugin => {
+export const plugin = (opts : { debug: boolean }): Plugin => {
   const compilableFiles: Map<string, Set<string>> = new Map()
+
+  // Enable/disable elm debugger
+  let debug : boolean
+
+  // On/Off given explicit user setting
+  if ((typeof opts !== "undefined") && (typeof opts.debug !== "undefined")) {
+    debug = opts.debug
+  } else {
+    // Use environment
+    debug = process.env.NODE_ENV !== 'production'
+  }
 
   return {
     name: 'vite-plugin-elm',
@@ -398,7 +409,7 @@ export const plugin = (): Plugin => {
       if (!id.endsWith('.elm')) return
       const isBuild = process.env.NODE_ENV === 'production'
       try {
-        const compiled = await compiler.compileToString([id], { output: '.js', optimize: isBuild, verbose: isBuild, debug: !isBuild })
+        const compiled = await compiler.compileToString([id], { output: '.js', optimize: isBuild, verbose: isBuild, debug })
         const dependencies = await compiler.findAllDependencies(id)
         compilableFiles.set(id, new Set(dependencies))
         const esm = toESModule(compiled)
