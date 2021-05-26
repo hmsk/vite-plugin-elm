@@ -399,7 +399,7 @@ export const plugin = (opts?: { debug: boolean }): Plugin => {
       if (!id.endsWith('.elm')) return
       const isBuild = process.env.NODE_ENV === 'production'
       try {
-        const compiled = await compiler.compileToString([id], { output: '.js', optimize: isBuild, verbose: isBuild, debug })
+        const compiled = await compiler.compileToString([id], { output: '.js', optimize: !debug && isBuild, verbose: isBuild, debug })
         const dependencies = await compiler.findAllDependencies(id)
         compilableFiles.set(id, new Set(dependencies))
         const esm = toESModule(compiled)
