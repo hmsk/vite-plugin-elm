@@ -369,17 +369,7 @@ const viteProjectPath = (dependency: string) => `/${relative(process.cwd(), depe
 
 export const plugin = (opts?: { debug: boolean }): Plugin => {
   const compilableFiles: Map<string, Set<string>> = new Map()
-
-  // Enable/disable elm debugger
-  let debug : boolean
-
-  // On/Off given explicit user setting
-  if ((typeof opts !== "undefined") && (typeof opts.debug !== "undefined")) {
-    debug = opts.debug
-  } else {
-    // Use environment
-    debug = process.env.NODE_ENV !== 'production'
-  }
+  const debug = opts?.debug ?? process.env.NODE_ENV !== 'production'
 
   return {
     name: 'vite-plugin-elm',
