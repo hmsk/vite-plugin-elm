@@ -13,7 +13,7 @@ Elm.MyApplication.init();
 ## Setup
 
 ```
-npx i -D vite-plugin-elm
+npm i -D vite-plugin-elm
 ```
 
 Update `vite.config.(js|ts)`
