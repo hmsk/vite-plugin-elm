@@ -48,7 +48,9 @@ See [`/example`](/example) dir to play with an actual vite project. And [this wo
 
 ### `debug` (Default: `process.env.NODE_ENV !== 'production'`)
 
-By giving a boolean, can force debug mode of Elm.
+By giving a boolean, can control debug mode of Elm (means toggle Elm Debugger)
+
+![image](https://user-images.githubusercontent.com/85887/120060168-fd7d8600-c00a-11eb-86cd-4125fe06dc59.png)
 
 ```ts
 import elmPlugin from 'vite-plugin-elm'
@@ -58,7 +60,8 @@ module.exports = {
 }
 ```
 
-When it's `false`, disables debug mode anytime. And, enables debug mode even in production by `true`. When production build gets debug mode, compile optimization doesn't happen.
+When it's `false`, disables debug mode in both development and production. Conversely, enables debug mode even in production by `true`. **When production build gets debug mode, Elm's compile optimization doesn't happen**.
+
 
 ## Acknowledgement
 
