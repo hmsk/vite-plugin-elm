@@ -1,9 +1,11 @@
 import { Plugin, ModuleNode } from 'vite'
 import { relative } from 'path'
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 //@ts-ignore
-import compiler from 'node-elm-compiler'
+import compiler from 'node-elm-compiler' // @ts-ignore
 //@ts-ignore
 import { toESModule } from 'elm-esm'
+/* eslint-enable @typescript-eslint/ban-ts-comment */
 
 const injectHMR = (compiledESM: string, dependencies: string[]): string => `
 ${compiledESM}
@@ -364,7 +366,7 @@ if (import.meta.hot) {
 }
 `
 
-const trimDebugMessage = (code: string): string => code.replace(/(console\.warn\(\'Compiled in DEBUG mode)/, '// $1')
+const trimDebugMessage = (code: string): string => code.replace(/(console\.warn\('Compiled in DEBUG mode)/, '// $1')
 const viteProjectPath = (dependency: string) => `/${relative(process.cwd(), dependency)}`
 
 export const plugin = (opts?: { debug: boolean }): Plugin => {

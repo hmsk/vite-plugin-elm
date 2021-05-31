@@ -8,7 +8,8 @@
   ],
   "scripts": {
     "dev": "tsc -w -p .",
-    "build": "rm -rf dist && tsc -p ."
+    "build": "rm -rf dist && tsc -p .",
+    "lint": "eslint . --max-warnings 0"
   },
   "repository": {
     "type": "git",
@@ -37,6 +38,10 @@
   },
   "devDependencies": {
     "@types/node": "15.0.1",
+    "@typescript-eslint/eslint-plugin": "4.25.0",
+    "@typescript-eslint/parser": "4.25.0",
+    "eslint": "7.27.0",
+    "eslint-config-prettier": "8.3.0",
     "typescript": "4.2.4",
     "vite": "2.2.3"
   },
