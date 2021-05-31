@@ -399,6 +399,7 @@ export const plugin = (opts?: { debug: boolean }): Plugin => {
     },
     async transform(_code, id) {
       if (!id.endsWith('.elm')) return
+      compilableFiles.delete(id)
       const isBuild = process.env.NODE_ENV === 'production'
       try {
         const compiled = await compiler.compileToString([id], {
@@ -423,7 +424,6 @@ export const plugin = (opts?: { debug: boolean }): Plugin => {
           map: null,
         }
       } catch (e) {
-        compilableFiles.delete(id)
         if (e.message.includes('-- NO MAIN')) {
           const message = `${viteProjectPath(
             id,
