@@ -54,7 +54,7 @@ if (import.meta.hot) {
 
   import.meta.hot.accept()
   import.meta.hot.accept([
-    "${dependencies.join("\", \"")}"
+    "${dependencies.join('", "')}"
   ], () => { console.log("[vite-elm-plugin] Dependency is updated") })
 
   import.meta.hot.on('hot-update-dependents', (data) => {
@@ -390,30 +390,43 @@ export const plugin = (opts?: { debug: boolean }): Plugin => {
         server.ws.send({
           type: 'custom',
           event: 'hot-update-dependents',
-          data: modulesToCompile.map(({ url }) => url)
+          data: modulesToCompile.map(({ url }) => url),
         })
         return modulesToCompile
       } else {
         return modules
       }
     },
-    async transform (_code, id) {
+    async transform(_code, id) {
       if (!id.endsWith('.elm')) return
       const isBuild = process.env.NODE_ENV === 'production'
       try {
-        const compiled = await compiler.compileToString([id], { output: '.js', optimize: !debug && isBuild, verbose: isBuild, debug })
+        const compiled = await compiler.compileToString([id], {
+          output: '.js',
+          optimize: !debug && isBuild,
+          verbose: isBuild,
+          debug,
+        })
         const dependencies = await compiler.findAllDependencies(id)
         compilableFiles.set(id, new Set(dependencies))
         const esm = toESModule(compiled)
 
         const hotFixForMissingKey = 'function() { key.a(onUrlChange(_Browser_getUrl())); };'
-        const replaced = !isBuild && esm.includes('elm$browser$Browser$application') ? esm.replace(hotFixForMissingKey, `${hotFixForMissingKey}\n\tkey['elm-hot-nav-key'] = true;\n`) : esm
+        const replaced =
+          !isBuild && esm.includes('elm$browser$Browser$application')
+            ? esm.replace(hotFixForMissingKey, `${hotFixForMissingKey}\n\tkey['elm-hot-nav-key'] = true;\n`)
+            : esm
 
-        return { code: isBuild ? esm : trimDebugMessage(injectHMR(replaced, dependencies.map(viteProjectPath))), map: null }
+        return {
+          code: isBuild ? esm : trimDebugMessage(injectHMR(replaced, dependencies.map(viteProjectPath))),
+          map: null,
+        }
       } catch (e) {
         compilableFiles.delete(id)
         if (e.message.includes('-- NO MAIN')) {
-          const message = `${viteProjectPath(id)}: NO MAIN .elm file is requested to transform by vite. Probably, this file is just a depending module`
+          const message = `${viteProjectPath(
+            id,
+          )}: NO MAIN .elm file is requested to transform by vite. Probably, this file is just a depending module`
           console.error(message)
           throw message
         } else {
@@ -421,7 +434,7 @@ export const plugin = (opts?: { debug: boolean }): Plugin => {
           throw e
         }
       }
-    }
+    },
   }
 }
 

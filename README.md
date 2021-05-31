@@ -62,7 +62,6 @@ module.exports = {
 
 When it's `false`, disables debug mode in both development and production. Conversely, enables debug mode even in production by `true`. **When production build gets debug mode, Elm's compile optimization doesn't happen**.
 
-
 ## Acknowledgement
 
 - [klazuka/elm-hot](https://github.com/klazuka/elm-hot) for a helpful referrence of the HMR implementation
