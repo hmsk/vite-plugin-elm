@@ -1,7 +1,6 @@
+import { defineConfig } from 'vite'
 import { plugin } from 'vite-plugin-elm'
 
-const config = {
+export default defineConfig({
   plugins: [plugin()]
-}
-
-module.exports = config
+})

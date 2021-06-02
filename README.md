@@ -8,7 +8,7 @@ A plugin enables you to compile an Elm [application](https://package.elm-lang.or
 ```ts
 import { Elm } from './MyApplication.elm'
 
-Elm.MyApplication.init();
+Elm.MyApplication.init()
 ```
 
 ## Setup
@@ -20,11 +20,12 @@ npm i -D vite-plugin-elm
 Update `vite.config.(js|ts)`
 
 ```ts
+import { defineConfig } from 'vite'
 import elmPlugin from 'vite-plugin-elm'
 
-module.exports = {
+export default defineConfig({
   plugins: [elmPlugin()]
-}
+})
 ```
 
 Then you can import `.elm` file like:
@@ -36,7 +37,7 @@ import { Elm } from './Hello.elm'
 then
 
 ```ts
-// mount "Hello" Browser.{element,document} on #root
+// Mount "Hello" Browser.{element,document} on #root
 Elm.Hello.init({
   node: document.getElementById('root'),
   flags: "Initial Message"
@@ -54,11 +55,12 @@ By giving a boolean, can control debug mode of Elm (means toggle Elm Debugger)
 ![image](https://user-images.githubusercontent.com/85887/120060168-fd7d8600-c00a-11eb-86cd-4125fe06dc59.png)
 
 ```ts
+import { defineConfig } from 'vite'
 import elmPlugin from 'vite-plugin-elm'
 
-module.exports = {
+export default defineConfig({
   plugins: [elmPlugin({ debug: false })]
-}
+})
 ```
 
 When it's `false`, disables debug mode in both development and production. Conversely, enables debug mode even in production by `true`. **When production build gets debug mode, Elm's compile optimization doesn't happen**.
