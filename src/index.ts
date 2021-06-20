@@ -97,7 +97,8 @@ if (import.meta.hot) {
     const id = getId()
     const instance = {
       id, path, domNode, flags, portSubscribes, portSends,
-      lastState: null
+      lastState: null,
+      initialState: null
     }
     return instances[id] = instance
   }
@@ -277,6 +278,11 @@ if (import.meta.hot) {
         let oldModel = swappingInstance.lastState
         const newModel = initialStateTuple.a
 
+        if (JSON.stringify(newModel.state.a) !== swappingInstance.initialState) {
+          console.log("[vite-plugin-elm] Initial state seems to be updated. Refreshes page")
+          import.meta.hot.invalidate()
+        }
+
         if (typeof elmSymbol("elm$browser$Browser$application") !== "undefined" && typeof elmSymbol("elm$browser$Browser$Navigation") !== "undefined") {
           const oldKeyLoc = findNavKey(oldModel)
           const newKeyLoc = findNavKey(newModel)
@@ -304,6 +310,7 @@ if (import.meta.hot) {
         initialStateTuple.b = elmSymbol("elm$core$Platform$Cmd$none")
       } else {
         initializingInstance.lastState = initialStateTuple.a
+        initializingInstance.initialState = JSON.stringify(initialStateTuple.a.state.a)
       }
 
       return initialStateTuple
