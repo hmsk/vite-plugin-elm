@@ -1,4 +1,6 @@
-module Message exposing(importableMessage)
+module Message exposing (importableMessage)
+
 
 importableMessage : String
-importableMessage = "I'm from a dependency!"
+importableMessage =
+    "I'm from a dependency!"

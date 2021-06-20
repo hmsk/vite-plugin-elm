@@ -1,8 +1,7 @@
 module Application exposing (..)
 
 import Browser
-import Html exposing (Html, div, h1, img, text)
-import Html.Attributes exposing (src)
+import Html exposing (Html, div, h1, text)
 
 
 
@@ -27,7 +26,7 @@ type Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update _ model =
     ( model, Cmd.none )
 
 
@@ -36,7 +35,7 @@ update msg model =
 
 
 view : Model -> Html Msg
-view model =
+view _ =
     div []
         [ h1 [] [ text "Your Elm App is working!" ]
         ]
