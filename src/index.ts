@@ -68,7 +68,7 @@ if (import.meta.hot) {
     _Scheduler_binding = () => _Scheduler_fail(new Error("[vite-elm-plugin] Inactive Elm instance."))
 
     if (cancellers.length) {
-      console.log("[vite-elm-plugin] Killing" + cancellers.length + " running processes...")
+      console.log("[vite-elm-plugin] Killing " + cancellers.length + " running processes...")
       try {
         cancellers.forEach((cancel) => { cancel() })
       } catch (e) {
