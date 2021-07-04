@@ -420,6 +420,7 @@ export const plugin = (opts?: { debug: boolean }): Plugin => {
           debug,
         })
 
+        // Apparently `addWatchFile` may not exist: https://github.com/hmsk/vite-plugin-elm/pull/36
         if (this.addWatchFile) {
           dependencies.forEach(this.addWatchFile)
         }
