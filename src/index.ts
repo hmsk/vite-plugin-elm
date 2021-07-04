@@ -407,7 +407,11 @@ export const plugin = (opts?: { debug: boolean }): Plugin => {
     async transform(_code, id) {
       if (!id.endsWith('.elm')) return
       compilableFiles.delete(id)
+
       const isBuild = process.env.NODE_ENV === 'production'
+      const dependencies: string[] = await compiler.findAllDependencies(id)
+      compilableFiles.set(id, new Set(dependencies))
+
       try {
         const compiled = await compiler.compileToString([id], {
           output: '.js',
@@ -415,9 +419,11 @@ export const plugin = (opts?: { debug: boolean }): Plugin => {
           verbose: isBuild,
           debug,
         })
-        const dependencies: string[] = await compiler.findAllDependencies(id)
-        dependencies.forEach(this.addWatchFile)
-        compilableFiles.set(id, new Set(dependencies))
+
+        if (this.addWatchFile) {
+          dependencies.forEach(this.addWatchFile)
+        }
+
         const esm = toESModule(compiled)
 
         const hotFixForMissingKey = 'function() { key.a(onUrlChange(_Browser_getUrl())); };'
@@ -435,10 +441,8 @@ export const plugin = (opts?: { debug: boolean }): Plugin => {
           const message = `${viteProjectPath(
             id,
           )}: NO MAIN .elm file is requested to transform by vite. Probably, this file is just a depending module`
-          console.error(message)
           throw message
         } else {
-          console.error(e)
           throw e
         }
       }
