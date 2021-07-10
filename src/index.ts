@@ -278,7 +278,7 @@ if (import.meta.hot) {
         let oldModel = swappingInstance.lastState
         const newModel = initialStateTuple.a
 
-        if (JSON.stringify(newModel.state.a) !== swappingInstance.initialState) {
+        if (JSON.stringify(newModel.state?.a ? newModel.state.a : newModel) !== swappingInstance.initialState) {
           console.log("[vite-plugin-elm] Initial state seems to be updated. Refreshes page")
           import.meta.hot.invalidate()
         }
@@ -310,7 +310,7 @@ if (import.meta.hot) {
         initialStateTuple.b = elmSymbol("elm$core$Platform$Cmd$none")
       } else {
         initializingInstance.lastState = initialStateTuple.a
-        initializingInstance.initialState = JSON.stringify(initialStateTuple.a.state.a)
+        initializingInstance.initialState = JSON.stringify(initialStateTuple.a.state?.a ? initialStateTuple.a.state.a : initialStateTuple.a)
       }
 
       return initialStateTuple
