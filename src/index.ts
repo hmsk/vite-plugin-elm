@@ -422,7 +422,7 @@ export const plugin = (opts?: { debug: boolean }): Plugin => {
 
         // Apparently `addWatchFile` may not exist: https://github.com/hmsk/vite-plugin-elm/pull/36
         if (this.addWatchFile) {
-          dependencies.forEach(this.addWatchFile)
+          dependencies.forEach(this.addWatchFile.bind(this))
         }
 
         const esm = toESModule(compiled)
