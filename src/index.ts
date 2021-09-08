@@ -438,7 +438,7 @@ export const plugin = (opts?: { debug: boolean }): Plugin => {
           map: null,
         }
       } catch (e) {
-        if (e.message.includes('-- NO MAIN')) {
+        if (e instanceof Error && e.message.includes('-- NO MAIN')) {
           const message = `${viteProjectPath(
             id,
           )}: NO MAIN .elm file is requested to transform by vite. Probably, this file is just a depending module`
