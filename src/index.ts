@@ -376,7 +376,7 @@ if (import.meta.hot) {
 const trimDebugMessage = (code: string): string => code.replace(/(console\.warn\('Compiled in DEBUG mode)/, '// $1')
 const viteProjectPath = (dependency: string) => `/${relative(process.cwd(), dependency)}`
 
-export const plugin = (opts?: { debug: boolean; optimize?: boolean }): Plugin => {
+export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin => {
   const compilableFiles: Map<string, Set<string>> = new Map()
   const debug = opts?.debug ?? process.env.NODE_ENV !== 'production'
   const optimize = opts?.optimize
