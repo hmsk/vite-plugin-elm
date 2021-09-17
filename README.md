@@ -65,7 +65,7 @@ export default defineConfig({
 
 When it's `false`, disables debug mode in both development and production. Conversely, enables debug mode even in production by `true`. **When production build gets debug mode, Elm's compile optimization doesn't happen**.
 
-### `optimize` (Default: `!debug && process.env.NODE_ENV !== 'production'`)
+### `optimize` (Default: `!debug && process.env.NODE_ENV === 'production'`)
 
 By giving a boolean, can control build optimisation, useful to use `Debug` [elm functions](https://package.elm-lang.org/packages/elm/core/latest/Debug)
 
