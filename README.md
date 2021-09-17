@@ -65,6 +65,22 @@ export default defineConfig({
 
 When it's `false`, disables debug mode in both development and production. Conversely, enables debug mode even in production by `true`. **When production build gets debug mode, Elm's compile optimization doesn't happen**.
 
+### `optimize` (Default: `!debug && process.env.NODE_ENV !== 'production'`)
+
+By giving a boolean, can control build optimisation, useful to use `Debug` [elm functions](https://package.elm-lang.org/packages/elm/core/latest/Debug)
+
+```ts
+import { defineConfig } from 'vite'
+import elmPlugin from 'vite-plugin-elm'
+
+export default defineConfig({
+  plugins: [elmPlugin({ debug: false, optimize: false })]
+})
+```
+
+When true, optimize build and forbid usage of `Debug` elm functions.
+When specify optimize attribute, had to tell if need to debug or not. It's not why you want to make debug traces you want to see all actions.
+
 ## Acknowledgement
 
 - [klazuka/elm-hot](https://github.com/klazuka/elm-hot) for a helpful referrence of the HMR implementation
