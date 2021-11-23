@@ -418,7 +418,7 @@ export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin =
           output: '.js',
           optimize: typeof optimize === 'boolean' ? optimize : !debug && isBuild,
           verbose: isBuild,
-          debug: debug ?? !isBuild
+          debug: debug ?? !isBuild,
         })
 
         // Apparently `addWatchFile` may not exist: https://github.com/hmsk/vite-plugin-elm/pull/36
