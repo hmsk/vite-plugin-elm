@@ -378,7 +378,7 @@ const viteProjectPath = (dependency: string) => `/${relative(process.cwd(), depe
 
 export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin => {
   const compilableFiles: Map<string, Set<string>> = new Map()
-  const debug = opts?.debug ?? process.env.NODE_ENV !== 'production'
+  const debug = opts?.debug
   const optimize = opts?.optimize
 
   return {
@@ -418,7 +418,7 @@ export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin =
           output: '.js',
           optimize: typeof optimize === 'boolean' ? optimize : !debug && isBuild,
           verbose: isBuild,
-          debug,
+          debug: debug ?? !isBuild
         })
 
         // Apparently `addWatchFile` may not exist: https://github.com/hmsk/vite-plugin-elm/pull/36
