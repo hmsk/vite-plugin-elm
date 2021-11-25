@@ -67,7 +67,7 @@ When it's `false`, disables debug mode in both development and production. Conve
 
 ### `optimize` (Default: `!debug && process.env.NODE_ENV === 'production'`)
 
-By giving a boolean, can control build optimisation, useful to use `Debug` [elm functions](https://package.elm-lang.org/packages/elm/core/latest/Debug)
+By giving a boolean, can control build optimization, useful to use `Debug` [elm functions](https://package.elm-lang.org/packages/elm/core/latest/Debug)
 
 ```ts
 import { defineConfig } from 'vite'
