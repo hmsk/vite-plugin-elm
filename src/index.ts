@@ -283,7 +283,7 @@ if (import.meta.hot) {
           import.meta.hot.invalidate()
         }
 
-        if (typeof elmSymbol("elm$browser$Browser$application") !== "undefined" && typeof elmSymbol("elm$browser$Browser$Navigation") !== "undefined") {
+        if (typeof elmSymbol("elm$browser$Browser$application") !== "undefined") {
           const oldKeyLoc = findNavKey(oldModel)
           const newKeyLoc = findNavKey(newModel)
           let error = null
