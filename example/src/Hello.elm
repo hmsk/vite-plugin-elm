@@ -1,7 +1,8 @@
 module Hello exposing (main)
 
 import Browser
-import Html exposing (Html, div, text)
+import Html exposing (Html, a, div, text)
+import Html.Attributes exposing (href)
 import Html.Events exposing (onClick)
 import Message exposing (importableMessage)
 
@@ -23,7 +24,7 @@ type alias Model =
 
 init : String -> ( Model, Cmd Msg )
 init flags =
-    ( { message = "Hi, I'm compiled through vite-plugin-elm: " ++ flags }, Cmd.none )
+    ( { message = "Hi, I'm compiled Browser.element func through vite-plugin-elm: " ++ flags }, Cmd.none )
 
 
 type Msg
@@ -40,8 +41,9 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ div [ onClick (Name "Woooo") ] [ text model.message ]
+        [ div [ onClick (Name "Woooo, I'm clicked") ] [ text model.message ]
         , div [] [ text importableMessage ]
+        , a [ href "/application/" ] [ text "See Browser.Application sample" ]
         ]
 
 

@@ -1,7 +1,7 @@
 {
   "name": "vite-plugin-elm-sample",
   "private": true,
-  "version": "2.4.1",
+  "version": "2.5.2",
   "description": "A sample project to use vite-plugin-elm",
   "main": "index.js",
   "scripts": {
