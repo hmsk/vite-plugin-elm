@@ -38,7 +38,7 @@
   },
   "homepage": "https://github.com/hmsk/vite-plugin-elm",
   "dependencies": {
-    "elm-esm": "1.1.2",
+    "elm-esm": "1.1.4",
     "node-elm-compiler": "5.0.6"
   },
   "devDependencies": {
