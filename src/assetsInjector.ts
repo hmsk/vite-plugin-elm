@@ -1,4 +1,4 @@
-const DYNAMIC_ASSET_TAG = /'\[ELM_VITE_PLUGIN_ASSET_PATH_DYNAMIC:(?<path>.+?)\]'/g
+const ASSET_TAG = /'\[VITE_PLUGIN_ELM_ASSET:(?<path>.+?)\]'/g
 
 const importNameFrom = (path: string) => {
   return path.replace(/[/.\-~@?]/g, '_')
@@ -11,7 +11,7 @@ const generateImports = (paths: string[]) => {
 const assetsInjector = (compiledElmCode: string) => {
   const dynamicPaths: Record<string, string> = {}
   let matchedDynamic
-  while ((matchedDynamic = DYNAMIC_ASSET_TAG.exec(compiledElmCode)) !== null) {
+  while ((matchedDynamic = ASSET_TAG.exec(compiledElmCode)) !== null) {
     if (matchedDynamic.groups?.path) {
       dynamicPaths[importNameFrom(matchedDynamic.groups.path)] = matchedDynamic.groups.path
     }
@@ -19,7 +19,7 @@ const assetsInjector = (compiledElmCode: string) => {
 
   if (Object.keys(dynamicPaths).length > 0) {
     const imports = generateImports(Object.values(dynamicPaths))
-    return `${imports}\n\n${compiledElmCode.replace(DYNAMIC_ASSET_TAG, (_, match) => importNameFrom(match))}`
+    return `${imports}\n\n${compiledElmCode.replace(ASSET_TAG, (_, match) => importNameFrom(match))}`
   } else {
     return compiledElmCode
   }
