@@ -39,11 +39,9 @@ view : Model -> Html Msg
 view _ =
     div []
         [ h1 [] [ text "Your Elm App is working!" ]
-        , h2 [] [ text "import static assets via vite" ]
-        , img [ src "[ELM_VITE_PLUGIN_ASSET_PATH_STATIC:../assets/logo.jpg]", width 128 ] []
-        , h2 [] [ text "import dynamic assets via vite" ]
-        , img [ src "[ELM_VITE_PLUGIN_ASSET_PATH_DYNAMIC:/assets/logo.jpg]", width 128 ] []
-        , img [ src "[ELM_VITE_PLUGIN_ASSET_PATH_DYNAMIC:/assets/logo.png]", width 128 ] []
+        , h2 [] [ text "import assets via vite" ]
+        , img [ src "[VITE_PLUGIN_ELM_ASSET:/assets/logo.jpg]", width 128 ] []
+        , img [ src "[VITE_PLUGIN_ELM_ASSET:/assets/logo.png?inline]", width 128 ] []
         ]
 
 
