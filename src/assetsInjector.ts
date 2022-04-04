@@ -1,3 +1,6 @@
+import { Node, parse } from 'acorn'
+import { fullAncestor as walk } from 'acorn-walk'
+
 const ASSET_TAG = /'\[VITE_PLUGIN_ELM_ASSET:(?<path>.+?)\]'/g
 
 const importNameFrom = (path: string) => {
@@ -8,20 +11,47 @@ const generateImports = (paths: string[]) => {
   return paths.map((path) => `import ${importNameFrom(path)} from '${path}'`).join('\n')
 }
 
-const assetsInjector = (compiledElmCode: string) => {
-  const dynamicPaths: Record<string, string> = {}
-  let matchedDynamic
-  while ((matchedDynamic = ASSET_TAG.exec(compiledElmCode)) !== null) {
-    if (matchedDynamic.groups?.path) {
-      dynamicPaths[importNameFrom(matchedDynamic.groups.path)] = matchedDynamic.groups.path
-    }
-  }
+interface NodeWithRaw extends Node {
+  raw: string
+}
+const isLiteral = (node: Node): node is NodeWithRaw => node.type === 'Literal'
 
-  if (Object.keys(dynamicPaths).length > 0) {
-    const imports = generateImports(Object.values(dynamicPaths))
-    return `${imports}\n\n${compiledElmCode.replace(ASSET_TAG, (_, match) => importNameFrom(match))}`
+const assetsInjector = (compiledElmCodeInEsm: string) => {
+  const taggedPaths: Record<string, { path: string; start: number; end: number }> = {}
+
+  walk(
+    parse(compiledElmCodeInEsm, { ecmaVersion: 2015, sourceType: 'module' }),
+    (node) => {
+      if (isLiteral(node)) {
+        const matched = ASSET_TAG.exec(node.raw)
+        if (matched !== null) {
+          if (matched.groups?.path) {
+            taggedPaths[importNameFrom(matched.groups.path)] = {
+              path: matched.groups.path,
+              start: node.start,
+              end: node.end,
+            }
+          }
+        }
+      }
+    },
+    undefined,
+    null,
+  )
+
+  if (Object.keys(taggedPaths).length > 0) {
+    const src = compiledElmCodeInEsm.split('')
+    const importPaths: string[] = []
+    Object.entries(taggedPaths).forEach(([importName, { path, start, end }]) => {
+      importPaths.push(path)
+      for (let i = start; i < end; i++) {
+        src[i] = ''
+      }
+      src[start] = importName
+    })
+    return `${generateImports(importPaths)}\n\n${src.join('')}`
   } else {
-    return compiledElmCode
+    return compiledElmCodeInEsm
   }
 }
 
