@@ -1,4 +1,5 @@
-import { Node, parse } from 'acorn'
+import type { Node } from 'acorn'
+import { parse } from 'acorn'
 import { fullAncestor as walk } from 'acorn-walk'
 
 const ASSET_TAG = /'\[VITE_PLUGIN_ELM_ASSET:(?<path>.+?)\]'/g

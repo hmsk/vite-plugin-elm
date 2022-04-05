@@ -4,7 +4,7 @@ import { toESModule } from 'elm-esm'
 //@ts-ignore
 import compiler from 'node-elm-compiler'
 import { relative } from 'path'
-import { ModuleNode, Plugin } from 'vite'
+import type { ModuleNode, Plugin } from 'vite'
 import assetsInjector from './assetsInjector'
 /* eslint-enable @typescript-eslint/ban-ts-comment */
 
