@@ -81,6 +81,29 @@ export default defineConfig({
 When true, optimize build and forbid usage of `Debug` elm functions.
 When specify optimize attribute, had to tell if need to debug or not. It's not why you want to make debug traces you want to see all actions.
 
+## Static Assets Handling
+
+This plugin supports importing assets by giving a particular tag `[VITE_PLUGIN_ELM_ASSET:<path to asset>]` to leverage [Vite's asset handling](https://vitejs.dev/guide/assets.html#importing-asset-as-url).
+When Elm code has a string, this plugin replaces it with an imported asset. That string should be just a string without any concatenation.
+
+```elm
+Html.img [ Html.Attributes.src "[VITE_PLUGIN_ELM_ASSET:/assets/logo.jpg]" ] []
+```
+
+### Helper package
+
+By using a Elm package `elm-vite-plugin-helper`, you can shorten such the tagging:
+
+```
+elm install hmsk/elm-vite-plugin-helper
+```
+
+```elm
+import VitePluginHelper
+
+Html.img [ Html.Attributes.src <| VitePluginHelper.asset "/assets/logo.png?inline" ] []
+```
+
 ## Acknowledgement
 
 - [klazuka/elm-hot](https://github.com/klazuka/elm-hot) for a helpful referrence of the HMR implementation
