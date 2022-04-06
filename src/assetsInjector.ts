@@ -46,14 +46,14 @@ interface NodeCallExpression extends Node {
 }
 const isCallExpression = (node: Node): node is NodeCallExpression => node.type === 'CallExpression'
 
-const assetsInjector = (compiledElmCodeInEsm: string) => {
+export const injectAssets = (compiledESM: string) => {
   const taggedPaths: {
     path: string
     start: number
     end: number
   }[] = []
 
-  const ast = parse(compiledElmCodeInEsm, { ecmaVersion: 2015, sourceType: 'module' })
+  const ast = parse(compiledESM, { ecmaVersion: 2015, sourceType: 'module' })
   let helperFunctionName: string
   walk(
     ast,
@@ -109,7 +109,7 @@ const assetsInjector = (compiledElmCodeInEsm: string) => {
   )
 
   if (taggedPaths.length > 0) {
-    const src = compiledElmCodeInEsm.split('')
+    const src = compiledESM.split('')
     const importPaths: string[] = []
     taggedPaths.forEach(({ path, start, end }) => {
       for (let i = start; i < end; i++) {
@@ -122,8 +122,6 @@ const assetsInjector = (compiledElmCodeInEsm: string) => {
     })
     return `${generateImports(importPaths)}\n\n${src.join('')}`
   } else {
-    return compiledElmCodeInEsm
+    return compiledESM
   }
 }
-
-export default assetsInjector

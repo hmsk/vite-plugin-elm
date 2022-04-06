@@ -5,7 +5,7 @@ import { toESModule } from 'elm-esm'
 import compiler from 'node-elm-compiler'
 import { relative } from 'path'
 import type { ModuleNode, Plugin } from 'vite'
-import assetsInjector from './assetsInjector'
+import { injectAssets } from './assetsInjector'
 /* eslint-enable @typescript-eslint/ban-ts-comment */
 
 const injectHMR = (compiledESM: string, dependencies: string[]): string => `
@@ -427,7 +427,7 @@ export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin =
           dependencies.forEach(this.addWatchFile.bind(this))
         }
 
-        const esm = assetsInjector(toESModule(compiled))
+        const esm = injectAssets(toESModule(compiled))
 
         const hotFixForMissingKey = 'function() { key.a(onUrlChange(_Browser_getUrl())); };'
         const replaced =
