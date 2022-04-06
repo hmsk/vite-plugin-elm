@@ -37,7 +37,7 @@ if (import.meta.hot) {
   const instances = import.meta.hot.data ? import.meta.hot.data.instances || {} : {}
   let uid = import.meta.hot.data ? import.meta.hot.data.uid || 0 : 0
 
-  if (Object.keys(instances).length === 0) console.log("[vite-elm-plugin] HMR enabled")
+  if (Object.keys(instances).length === 0) console.log("[vite-plugin-elm] HMR enabled")
 
   const cancellers = []
   let initializingInstance = null
@@ -46,7 +46,7 @@ if (import.meta.hot) {
   import.meta.hot.accept()
   import.meta.hot.accept([
     "${dependencies.join('", "')}"
-  ], () => { console.log("[vite-elm-plugin] Dependency is updated") })
+  ], () => { console.log("[vite-plugin-elm] Dependency is updated") })
 
   import.meta.hot.on('hot-update-dependents', (data) => {
     console.log("[vite-plugin-elm] Request to hot update dependents: " + data.join(", "))
@@ -56,14 +56,14 @@ if (import.meta.hot) {
     data.instances = instances
     data.uid = uid
 
-    _Scheduler_binding = () => _Scheduler_fail(new Error("[vite-elm-plugin] Inactive Elm instance."))
+    _Scheduler_binding = () => _Scheduler_fail(new Error("[vite-plugin-elm] Inactive Elm instance."))
 
     if (cancellers.length) {
-      console.log("[vite-elm-plugin] Killing " + cancellers.length + " running processes...")
+      console.log("[vite-plugin-elm] Killing " + cancellers.length + " running processes...")
       try {
         cancellers.forEach((cancel) => { cancel() })
       } catch (e) {
-        console.warn("[vite-elm-plugin] Kill process error: ", e.message)
+        console.warn("[vite-plugin-elm] Kill process error: ", e.message)
       }
     }
   })
@@ -133,7 +133,7 @@ if (import.meta.hot) {
   }
 
   const swap = (Elm, instance) => {
-    console.log("[vite-elm-plugin] Hot-swapping module:", instance.path)
+    console.log("[vite-plugin-elm] Hot-swapping module:", instance.path)
     swappingInstance = instance
 
     const containerNode = instance.domNode
