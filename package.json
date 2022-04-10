@@ -44,7 +44,7 @@
     "node-elm-compiler": "5.0.6"
   },
   "devDependencies": {
-    "@types/node": "16.11.9",
+    "@types/node": "16.11.26",
     "@typescript-eslint/eslint-plugin": "5.18.0",
     "@typescript-eslint/parser": "5.18.0",
     "eslint": "8.13.0",
