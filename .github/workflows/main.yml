@@ -31,3 +31,13 @@ jobs:
         run: |
           npm run lint
           npm run prettier
+
+      - name: Setup example project for integration tests
+        working-directory: './example'
+        run: |
+          npm install
+          npm run build
+          npx serve dist -l 8938 -n &
+
+      - name: Run integration tests
+        uses: cypress-io/github-action@v2
