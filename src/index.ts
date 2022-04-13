@@ -7,6 +7,7 @@ import { relative } from 'path'
 import type { ModuleNode, Plugin } from 'vite'
 import { injectAssets } from './assetsInjector'
 import { injectHMR } from './hmrInjector'
+import { acquireLock } from './mutex'
 /* eslint-enable @typescript-eslint/ban-ts-comment */
 
 const trimDebugMessage = (code: string): string => code.replace(/(console\.warn\('Compiled in DEBUG mode)/, '// $1')
@@ -49,6 +50,7 @@ export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin =
       const dependencies: string[] = await compiler.findAllDependencies(id)
       compilableFiles.set(id, new Set(dependencies))
 
+      const releaseLock = await acquireLock()
       try {
         const compiled = await compiler.compileToString([id], {
           output: '.js',
@@ -77,6 +79,8 @@ export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin =
         } else {
           throw e
         }
+      } finally {
+        releaseLock()
       }
     },
   }
