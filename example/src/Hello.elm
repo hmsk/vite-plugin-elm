@@ -2,7 +2,7 @@ module Hello exposing (main)
 
 import Browser
 import Html exposing (Html, a, div, text)
-import Html.Attributes exposing (href)
+import Html.Attributes exposing (href, attribute)
 import Html.Events exposing (onClick)
 import Message exposing (importableMessage)
 
@@ -41,7 +41,7 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ div [ onClick (Name "Woooo, I'm clicked") ] [ text model.message ]
+        [ div [ onClick (Name "Woooo, I'm clicked"), attribute "aria-label" "Clickable" ] [ text model.message ]
         , div [] [ text importableMessage ]
         , a [ href "/application/" ] [ text "See Browser.Application sample" ]
         ]
