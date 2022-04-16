@@ -12,6 +12,10 @@ describe('Browser.element', () => {
     cy.get('[aria-label="Clickable"]').click()
     cy.contains('Woooo')
   })
+
+  it('does not have a button for Elm Debugger', () => {
+    cy.get('svg[width="24px"][height="24px"]').should('not.exist')
+  })
 })
 
 describe('Browser.application', () => {
@@ -24,7 +28,7 @@ describe('Browser.application', () => {
   })
 
   describe('assets', () => {
-    it('render an asset with asset tag', () => {
+    it('renders an asset with asset tag', () => {
       cy.get('[alt="without option"]')
         .should('be.visible')
         .and(($img) => {
@@ -32,7 +36,7 @@ describe('Browser.application', () => {
         })
     })
 
-    it('With inline option', () => {
+    it('renders an asset with inline option', () => {
       cy.get('[alt="with inline option"]')
         .should('be.visible')
         .and(($img) => {
@@ -40,7 +44,7 @@ describe('Browser.application', () => {
         })
     })
 
-    it('With vite-plugin-helper', () => {
+    it('renders an asset with vite-plugin-helper', () => {
       cy.get('[alt="with vite-plugin-helper"]')
         .should('be.visible')
         .and(($img) => {

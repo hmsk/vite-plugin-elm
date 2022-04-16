@@ -12,4 +12,8 @@ describe('Browser.element', () => {
     cy.get('[aria-label="Clickable"]').click()
     cy.contains('Woooo')
   })
+
+  it('has a button for Elm Debugger', () => {
+    cy.get('svg[width="24px"][height="24px"]').should('be.visible')
+  })
 })
