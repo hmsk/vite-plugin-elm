@@ -37,7 +37,7 @@ jobs:
         run: |
           npm install
           npm run build
-          npx serve dist -l 8938 -n &
+          npm run serve &
 
       - name: Run integration tests
         uses: cypress-io/github-action@v2
