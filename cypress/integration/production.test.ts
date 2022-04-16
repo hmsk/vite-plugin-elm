@@ -1,6 +1,10 @@
+const PRODUCTION_BUILD_SERVER = 'http://localhost:8938'
+
+const onProductionBuild = (path: string) => new URL(path, PRODUCTION_BUILD_SERVER).toString()
+
 describe('Browser.element', () => {
   before(() => {
-    cy.visit('/')
+    cy.visit(onProductionBuild('/'))
   })
 
   it('seems to be working', () => {
@@ -12,7 +16,7 @@ describe('Browser.element', () => {
 
 describe('Browser.application', () => {
   before(() => {
-    cy.visit('/application')
+    cy.visit(onProductionBuild('/application'))
   })
 
   it('seems to be working', () => {
