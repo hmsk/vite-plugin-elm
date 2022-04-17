@@ -36,7 +36,21 @@ describe('Browser.element', () => {
         replacement: 'Replaced Message',
       })
       cy.contains('Replaced Message')
-      expect(window.performance.navigation.type).to.eq(window.performance.navigation.TYPE_NAVIGATE)
+      cy.window()
+        .then((w) => w.performance.navigation.type)
+        .should('eq', window.performance.navigation.TYPE_NAVIGATE)
+    })
+
+    it('does not perform HMR but reload the page when editing initial state', () => {
+      cy.task('amendFile', {
+        path: 'example/src/Hello.elm',
+        targetRegex: 'through vite-plugin-elm',
+        replacement: 'via the plugin',
+      })
+      cy.contains('via the plugin')
+      cy.window()
+        .then((w) => w.performance.navigation.type)
+        .should('eq', window.performance.navigation.TYPE_RELOAD)
     })
   })
 })
