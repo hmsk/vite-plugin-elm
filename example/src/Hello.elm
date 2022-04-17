@@ -2,7 +2,7 @@ module Hello exposing (main)
 
 import Browser
 import Html exposing (Html, a, div, text)
-import Html.Attributes exposing (href, attribute)
+import Html.Attributes exposing (attribute, href)
 import Html.Events exposing (onClick)
 import Message exposing (importableMessage)
 
