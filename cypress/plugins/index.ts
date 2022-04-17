@@ -1,4 +1,7 @@
-/// <reference types="cypress" />
+/// <reference types="node" />
+
+import { copyFileSync, readFileSync, renameSync, writeFileSync } from 'fs'
+
 // ***********************************************************
 // This example plugins/index.js can be used to load plugins
 //
@@ -16,8 +19,25 @@
  * @type {Cypress.PluginConfig}
  */
 // eslint-disable-next-line no-unused-vars
-const plugin = (/*on, config*/) => {
+const plugin = (on /*, config */) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
+  on('task', {
+    keepOriginal(path: string) {
+      const tmpFileName = `${path}.tmp`
+      copyFileSync(path, tmpFileName)
+      return tmpFileName
+    },
+    restoreOriginal(path: string) {
+      const tmpFileName = `${path}.tmp`
+      renameSync(tmpFileName, path)
+      return path
+    },
+    amendFile({ path, targetRegex, replacement }: { path: string; targetRegex: string; replacement: string }) {
+      const original = readFileSync(path).toString()
+      writeFileSync(path, original.replace(targetRegex, replacement))
+      return path
+    },
+  })
 }
 export default plugin
