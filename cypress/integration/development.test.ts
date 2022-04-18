@@ -42,6 +42,18 @@ describe('Browser.element', () => {
         .should('eq', window.performance.navigation.TYPE_NAVIGATE)
     })
 
+    it.only('performs HMR for editing imported module', () => {
+      cy.task('amendFile', {
+        path: 'example/src/Message.elm',
+        targetRegex: 'This message is from a dependency!',
+        replacement: 'Dependency is updated',
+      })
+      cy.contains('Dependency is updated')
+      cy.window()
+        .then((w) => w.performance.navigation.type)
+        .should('eq', window.performance.navigation.TYPE_NAVIGATE)
+    })
+
     it('does not perform HMR but reload the page when editing initial state', () => {
       cy.task('amendFile', {
         path: 'example/src/Hello.elm',
