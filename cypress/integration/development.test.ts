@@ -20,13 +20,14 @@ describe('Browser.element', () => {
   })
 
   describe('HMR', () => {
+    const files = ['example/src/Hello.elm', 'example/src/Message.elm']
     beforeEach(() => {
-      cy.task('keepOriginal', 'example/src/Hello.elm')
+      cy.task('keepOriginal', files)
       cy.visit(onDevelopmentBuild('/'))
     })
 
     afterEach(() => {
-      cy.task('restoreOriginal', 'example/src/Hello.elm')
+      cy.task('restoreOriginal', files)
     })
 
     it('performs HMR for editing view', () => {

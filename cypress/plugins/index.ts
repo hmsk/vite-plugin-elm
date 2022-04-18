@@ -23,15 +23,19 @@ const plugin = (on /*, config */) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
   on('task', {
-    keepOriginal(path: string) {
-      const tmpFileName = `${path}.tmp`
-      copyFileSync(path, tmpFileName)
-      return tmpFileName
+    keepOriginal(paths: string | string[]) {
+      return (Array.isArray(paths) ? paths : [paths]).map((path) => {
+        const tmpFileName = `${path}.tmp`
+        copyFileSync(path, tmpFileName)
+        return tmpFileName
+      })
     },
-    restoreOriginal(path: string) {
-      const tmpFileName = `${path}.tmp`
-      renameSync(tmpFileName, path)
-      return path
+    restoreOriginal(paths: string | string[]) {
+      return (Array.isArray(paths) ? paths : [paths]).map((path) => {
+        const tmpFileName = `${path}.tmp`
+        renameSync(tmpFileName, path)
+        return path
+      })
     },
     amendFile({ path, targetRegex, replacement }: { path: string; targetRegex: string; replacement: string }) {
       const original = readFileSync(path).toString()
