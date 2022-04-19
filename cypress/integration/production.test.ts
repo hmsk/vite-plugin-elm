@@ -10,7 +10,7 @@ describe('Browser.element', () => {
   it('seems to be working', () => {
     cy.contains("I'm compiled Browser.element")
     cy.get('[aria-label="Clickable"]').click()
-    cy.contains('Woooo')
+    cy.contains("I'm clicked")
   })
 
   it('does not have a button for Elm Debugger', () => {

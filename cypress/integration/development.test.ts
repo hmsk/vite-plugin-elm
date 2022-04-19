@@ -11,7 +11,7 @@ describe('Browser.element', () => {
     it('seems to be working', () => {
       cy.contains("I'm compiled Browser.element")
       cy.get('[aria-label="Clickable"]').click()
-      cy.contains('Woooo')
+      cy.contains("I'm clicked")
     })
 
     it('has a button for Elm Debugger', () => {
@@ -31,6 +31,7 @@ describe('Browser.element', () => {
     })
 
     it('performs HMR for editing view', () => {
+      cy.get('[aria-label="Clickable"]').click()
       cy.task('amendFile', {
         path: 'example/src/Hello.elm',
         targetRegex: 'See Browser.Application sample',
@@ -40,9 +41,11 @@ describe('Browser.element', () => {
       cy.window()
         .then((w) => w.performance.navigation.type)
         .should('eq', window.performance.navigation.TYPE_NAVIGATE)
+      cy.contains("I'm clicked")
     })
 
-    it.only('performs HMR for editing imported module', () => {
+    it('performs HMR for editing imported module', () => {
+      cy.get('[aria-label="Clickable"]').click()
       cy.task('amendFile', {
         path: 'example/src/Message.elm',
         targetRegex: 'This message is from a dependency!',
@@ -52,9 +55,11 @@ describe('Browser.element', () => {
       cy.window()
         .then((w) => w.performance.navigation.type)
         .should('eq', window.performance.navigation.TYPE_NAVIGATE)
+      cy.contains("I'm clicked")
     })
 
     it('does not perform HMR but reload the page when editing initial state', () => {
+      cy.get('[aria-label="Clickable"]').click()
       cy.task('amendFile', {
         path: 'example/src/Hello.elm',
         targetRegex: 'through vite-plugin-elm',
@@ -64,6 +69,7 @@ describe('Browser.element', () => {
       cy.window()
         .then((w) => w.performance.navigation.type)
         .should('eq', window.performance.navigation.TYPE_RELOAD)
+      cy.contains("I'm clicked").should('not.exist')
     })
   })
 })
