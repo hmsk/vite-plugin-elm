@@ -7,8 +7,6 @@ assignees: ''
 
 ---
 
-Before you create an issue, please consider to give a star on this repo that motivates author a bit with just a click :) Also supporting is welcome.
-
 **Describe the bug**
 A clear and concise description of what the bug is.
 
@@ -20,3 +18,5 @@ A clear and concise description of what you expected to happen.
 
 **Additional context**
 Add any other context about the problem here including Node/Vite/Plugin/OS versions.
+
+> 💁 Before you create an issue, please consider to give a star on this repo that motivates author a bit with just a click :) Also supporting is welcome.
