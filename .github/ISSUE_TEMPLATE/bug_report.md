@@ -1,0 +1,22 @@
+---
+name: Bug report
+about: Create a report to help us improve
+title: ''
+labels: ''
+assignees: ''
+
+---
+
+Before you create an issue, please consider to give a star on this repo that motivates author a bit with just a click :) Also supporting is welcome.
+
+**Describe the bug**
+A clear and concise description of what the bug is.
+
+**Reproducible repo**
+Provide a link for a minimum repo to reproduce your problem in other developers local instantly. It'll be great providing screenshots/screencasts to help explain your problem.
+
+**Expected behavior**
+A clear and concise description of what you expected to happen.
+
+**Additional context**
+Add any other context about the problem here including Node/Vite/Plugin/OS versions.
