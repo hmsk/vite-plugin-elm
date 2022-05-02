@@ -42,17 +42,18 @@ export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin =
         return modules
       }
     },
-    async transform(_code, id) {
-      if (!id.endsWith('.elm')) return
-      compilableFiles.delete(id)
+    async load(id) {
+      const parsedId = new URL(id, 'file://')
+      if (!parsedId.pathname.endsWith('.elm')) return
+      compilableFiles.delete(parsedId.pathname)
 
       const isBuild = process.env.NODE_ENV === 'production'
-      const dependencies: string[] = await compiler.findAllDependencies(id)
-      compilableFiles.set(id, new Set(dependencies))
+      const dependencies: string[] = await compiler.findAllDependencies(parsedId.pathname)
+      compilableFiles.set(parsedId.pathname, new Set(dependencies))
 
       const releaseLock = await acquireLock()
       try {
-        const compiled = await compiler.compileToString([id], {
+        const compiled = await compiler.compileToString([parsedId.pathname], {
           output: '.js',
           optimize: typeof optimize === 'boolean' ? optimize : !debug && isBuild,
           verbose: isBuild,
@@ -73,7 +74,7 @@ export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin =
       } catch (e) {
         if (e instanceof Error && e.message.includes('-- NO MAIN')) {
           const message = `${viteProjectPath(
-            id,
+            parsedId.pathname,
           )}: NO MAIN .elm file is requested to transform by vite. Probably, this file is just a depending module`
           throw message
         } else {
