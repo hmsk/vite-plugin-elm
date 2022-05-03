@@ -45,6 +45,26 @@ export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin =
     async load(id) {
       const parsedId = new URL(id, 'file://')
       if (!parsedId.pathname.endsWith('.elm')) return
+
+      const accompanyCandidates = parsedId.searchParams.getAll('with')
+
+      const accompanies = await (() => {
+        if (accompanyCandidates.length > 0) {
+          const importTree = this.getModuleIds()
+          let importer = ''
+          for (const moduleId of importTree) {
+            if (moduleId === id) break
+            importer = moduleId
+          }
+          const resolveAcoompany = async (accompany: string) => (await this.resolve(accompany, importer))?.id
+          return Promise.all(accompanyCandidates.map(resolveAcoompany))
+        } else {
+          return Promise.resolve([])
+        }
+      })()
+
+      const targets = [parsedId.pathname, ...accompanies]
+
       compilableFiles.delete(parsedId.pathname)
 
       const isBuild = process.env.NODE_ENV === 'production'
@@ -53,7 +73,7 @@ export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin =
 
       const releaseLock = await acquireLock()
       try {
-        const compiled = await compiler.compileToString([parsedId.pathname], {
+        const compiled: string = await compiler.compileToString(targets, {
           output: '.js',
           optimize: typeof optimize === 'boolean' ? optimize : !debug && isBuild,
           verbose: isBuild,
