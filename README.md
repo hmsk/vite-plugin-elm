@@ -104,6 +104,28 @@ import VitePluginHelper
 Html.img [ Html.Attributes.src <| VitePluginHelper.asset "/assets/logo.png?inline" ] []
 ```
 
+## Combine multiple main files (Experimental from `2.7.0-beta.1`)
+
+By passing importing path via `with` URL-ish parameter(s), the plugin compiles multiple main files in a single compilation process. That generates a single `Elm` export which has multiple properties for each given main files. This way reduces bundle size comparing to a total size of importing each file separately since common modules/Elm core codes are not repeated.
+
+```ts
+// `Elm.App` and `Elm.Another`, both can work as like importing individually.
+import { Elm } from './App.elm?with=./Another.elm'
+
+Elm.App.init({
+  node: document.getElementById('rootForApp'),
+})
+Elm.Another.init({
+  node: document.getElementById('rootForAnother'),
+})
+```
+
+For 3+ main files:
+
+```ts
+import { Elm } from './App.elm?with=./Another.elm&./YetAnother.elm'
+```
+
 ## Acknowledgement
 
 - [klazuka/elm-hot](https://github.com/klazuka/elm-hot) for a helpful referrence of the HMR implementation
