@@ -1,7 +1,7 @@
 module Hello exposing (main)
 
-import Browser
-import Html exposing (Html, a, div, text)
+import Browser exposing (Document)
+import Html exposing (a, div, li, p, text, ul)
 import Html.Attributes exposing (attribute, href)
 import Html.Events exposing (onClick)
 import Message exposing (importableMessage)
@@ -9,7 +9,7 @@ import Message exposing (importableMessage)
 
 main : Program String Model Msg
 main =
-    Browser.element
+    Browser.document
         { init = init
         , update = update
         , view = view
@@ -24,7 +24,7 @@ type alias Model =
 
 init : String -> ( Model, Cmd Msg )
 init flags =
-    ( { message = "Hi, I'm compiled Browser.element func through vite-plugin-elm: " ++ flags }, Cmd.none )
+    ( { message = "Hi, I'm compiled Browser.document func through vite-plugin-elm: " ++ flags }, Cmd.none )
 
 
 type Msg
@@ -38,13 +38,19 @@ update msg model =
             ( { model | message = name }, Cmd.none )
 
 
-view : Model -> Html Msg
+view : Model -> Document Msg
 view model =
-    div []
+    { title = "vite-elm-plugin"
+    , body =
         [ div [ onClick (Name "Woooo, I'm clicked"), attribute "aria-label" "Clickable" ] [ text model.message ]
         , div [] [ text importableMessage ]
-        , a [ href "/application/" ] [ text "See Browser.Application sample" ]
+        , p [] [ text "This page works with Browser.document" ]
+        , ul []
+            [ li [] [ a [ href "/application.html" ] [ text "See Browser.application sample" ] ]
+            , li [] [ a [ href "/elements.html" ] [ text "See Browser.element sample" ] ]
+            ]
         ]
+    }
 
 
 subscriptions : Model -> Sub Msg

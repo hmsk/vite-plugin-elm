@@ -2,13 +2,13 @@ const PRODUCTION_BUILD_SERVER = 'http://localhost:8938'
 
 const onProductionBuild = (path: string) => new URL(path, PRODUCTION_BUILD_SERVER).toString()
 
-describe('Browser.element', () => {
+describe('Browser.document', () => {
   before(() => {
     cy.visit(onProductionBuild('/'))
   })
 
   it('seems to be working', () => {
-    cy.contains("I'm compiled Browser.element")
+    cy.contains("I'm compiled Browser.document")
     cy.get('[aria-label="Clickable"]').click()
     cy.contains("I'm clicked")
   })

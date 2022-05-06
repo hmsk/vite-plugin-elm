@@ -2,14 +2,14 @@ const DEVELOPMENT_BUILD_SERVER = 'http://localhost:8936'
 
 const onDevelopmentBuild = (path: string) => new URL(path, DEVELOPMENT_BUILD_SERVER).toString()
 
-describe('Browser.element', () => {
+describe('Browser.document', () => {
   describe('static', () => {
     before(() => {
       cy.visit(onDevelopmentBuild('/'))
     })
 
     it('seems to be working', () => {
-      cy.contains("I'm compiled Browser.element")
+      cy.contains("I'm compiled Browser.document")
       cy.get('[aria-label="Clickable"]').click()
       cy.contains("I'm clicked")
     })
@@ -34,7 +34,7 @@ describe('Browser.element', () => {
       cy.get('[aria-label="Clickable"]').click()
       cy.task('amendFile', {
         path: 'example/src/Hello.elm',
-        targetRegex: 'See Browser.Application sample',
+        targetRegex: 'See Browser.document sample',
         replacement: 'Replaced Message',
       })
       cy.contains('Replaced Message')
