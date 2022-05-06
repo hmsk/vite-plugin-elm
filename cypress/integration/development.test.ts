@@ -34,7 +34,7 @@ describe('Browser.document', () => {
       cy.get('[aria-label="Clickable"]').click()
       cy.task('amendFile', {
         path: 'example/src/Hello.elm',
-        targetRegex: 'See Browser.document sample',
+        targetRegex: 'See Browser.element sample',
         replacement: 'Replaced Message',
       })
       cy.contains('Replaced Message')
