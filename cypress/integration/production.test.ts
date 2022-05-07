@@ -53,3 +53,15 @@ describe('Browser.application', () => {
     })
   })
 })
+
+describe('multiple Browser.element', () => {
+  before(() => {
+    cy.visit(onProductionBuild('/elements'))
+  })
+
+  it('seems to be working', () => {
+    cy.contains('Browser.element sample with combined importing')
+    cy.contains('This message is rendered by Description')
+    cy.contains('In the next major version;')
+  })
+})

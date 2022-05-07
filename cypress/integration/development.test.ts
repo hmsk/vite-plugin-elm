@@ -73,3 +73,50 @@ describe('Browser.document', () => {
     })
   })
 })
+
+describe('multiple Browser.element', () => {
+  before(() => {
+    cy.visit(onDevelopmentBuild('/elements.html'))
+  })
+
+  it('seems to be working', () => {
+    cy.contains('Browser.element sample with combined importing')
+    cy.contains('This message is rendered by Description')
+    cy.contains('In the next major version;')
+  })
+
+  describe('HMR', () => {
+    const files = ['example/src/Description.elm', 'example/src/ActualContentForAnotherDescription.elm']
+    beforeEach(() => {
+      cy.task('keepOriginal', files)
+    })
+
+    afterEach(() => {
+      cy.task('restoreOriginal', files)
+    })
+
+    it('performs HMR for editing view', () => {
+      cy.task('amendFile', {
+        path: 'example/src/Description.elm',
+        targetRegex: 'The above sentence',
+        replacement: 'The sentence above',
+      })
+      cy.contains('The sentence above')
+      cy.window()
+        .then((w) => w.performance.navigation.type)
+        .should('eq', window.performance.navigation.TYPE_NAVIGATE)
+    })
+
+    it('performs HMR for editing imported module', () => {
+      cy.task('amendFile', {
+        path: 'example/src/ActualContentForAnotherDescription.elm',
+        targetRegex: '3.0',
+        replacement: '4.0',
+      })
+      cy.contains('4.0')
+      cy.window()
+        .then((w) => w.performance.navigation.type)
+        .should('eq', window.performance.navigation.TYPE_NAVIGATE)
+    })
+  })
+})
