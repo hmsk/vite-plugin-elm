@@ -3,11 +3,11 @@ const DEVELOPMENT_BUILD_SERVER = 'http://localhost:8936'
 const onDevelopmentBuild = (path: string) => new URL(path, DEVELOPMENT_BUILD_SERVER).toString()
 
 describe('Browser.document', () => {
-  describe('static', () => {
-    before(() => {
-      cy.visit(onDevelopmentBuild('/'))
-    })
+  before(() => {
+    cy.visit(onDevelopmentBuild('/'))
+  })
 
+  describe('static', () => {
     it('seems to be working', () => {
       cy.contains("I'm compiled Browser.document")
       cy.get('[aria-label="Clickable"]').click()
@@ -23,7 +23,6 @@ describe('Browser.document', () => {
     const files = ['example/src/Hello.elm', 'example/src/Message.elm']
     beforeEach(() => {
       cy.task('keepOriginal', files)
-      cy.visit(onDevelopmentBuild('/'))
     })
 
     afterEach(() => {
@@ -70,6 +69,42 @@ describe('Browser.document', () => {
         .then((w) => w.performance.navigation.type)
         .should('eq', window.performance.navigation.TYPE_RELOAD)
       cy.contains("I'm clicked").should('not.exist')
+    })
+  })
+})
+
+describe('Browser.application', () => {
+  before(() => {
+    cy.visit(onDevelopmentBuild('/application.html'))
+  })
+
+  it('seems to be working', () => {
+    cy.contains('Your Elm App is working!')
+  })
+
+  describe('assets', () => {
+    it('renders an asset with asset tag', () => {
+      cy.get('[alt="without option"]')
+        .should('be.visible')
+        .and(($img) => {
+          expect($img.attr('src')).to.be.eq('/assets/logo.jpg')
+        })
+    })
+
+    it('renders an asset with inline option', () => {
+      cy.get('[alt="with inline option"]')
+        .should('be.visible')
+        .and(($img) => {
+          expect($img.attr('src')).to.be.eq('/assets/logo.png?inline')
+        })
+    })
+
+    it('renders an asset with vite-plugin-helper', () => {
+      cy.get('[alt="with vite-plugin-helper"]')
+        .should('be.visible')
+        .and(($img) => {
+          expect($img.attr('src')).to.be.eq('/assets/logo.png?inline')
+        })
     })
   })
 })
