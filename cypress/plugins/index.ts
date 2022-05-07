@@ -37,9 +37,9 @@ const plugin = (on /*, config */) => {
         return path
       })
     },
-    amendFile({ path, targetRegex, replacement }: { path: string; targetRegex: string; replacement: string }) {
+    amendFile({ path, target, replacement }: { path: string; target: string; replacement: string }) {
       const original = readFileSync(path).toString()
-      writeFileSync(path, original.replace(targetRegex, replacement))
+      writeFileSync(path, original.replace(target, replacement))
       return path
     },
   })

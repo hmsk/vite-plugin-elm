@@ -33,7 +33,7 @@ describe('Browser.document', () => {
       cy.get('[aria-label="Clickable"]').click()
       cy.task('amendFile', {
         path: 'example/src/Hello.elm',
-        targetRegex: 'See Browser.element sample',
+        target: 'See Browser.element sample',
         replacement: 'Replaced Message',
       })
       cy.contains('Replaced Message')
@@ -47,7 +47,7 @@ describe('Browser.document', () => {
       cy.get('[aria-label="Clickable"]').click()
       cy.task('amendFile', {
         path: 'example/src/Message.elm',
-        targetRegex: 'This message is from a dependency!',
+        target: 'This message is from a dependency!',
         replacement: 'Dependency is updated',
       })
       cy.contains('Dependency is updated')
@@ -61,7 +61,7 @@ describe('Browser.document', () => {
       cy.get('[aria-label="Clickable"]').click()
       cy.task('amendFile', {
         path: 'example/src/Hello.elm',
-        targetRegex: 'through vite-plugin-elm',
+        target: 'through vite-plugin-elm',
         replacement: 'via the plugin',
       })
       cy.contains('via the plugin')
@@ -133,7 +133,7 @@ describe('multiple Browser.element', () => {
     it('performs HMR for editing view', () => {
       cy.task('amendFile', {
         path: 'example/src/Description.elm',
-        targetRegex: 'The above sentence',
+        target: 'The above sentence',
         replacement: 'The sentence above',
       })
       cy.contains('The sentence above')
@@ -145,7 +145,7 @@ describe('multiple Browser.element', () => {
     it('performs HMR for editing imported module', () => {
       cy.task('amendFile', {
         path: 'example/src/ActualContentForAnotherDescription.elm',
-        targetRegex: '3.0',
+        target: '3.0',
         replacement: '4.0',
       })
       cy.contains('4.0')
