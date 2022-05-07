@@ -3,11 +3,11 @@ const DEVELOPMENT_BUILD_SERVER = 'http://localhost:8936'
 const onDevelopmentBuild = (path: string) => new URL(path, DEVELOPMENT_BUILD_SERVER).toString()
 
 describe('Browser.document', () => {
-  before(() => {
-    cy.visit(onDevelopmentBuild('/'))
-  })
-
   describe('static', () => {
+    before(() => {
+      cy.visit(onDevelopmentBuild('/'))
+    })
+
     it('seems to be working', () => {
       cy.contains("I'm compiled Browser.document")
       cy.get('[aria-label="Clickable"]').click()
@@ -22,6 +22,7 @@ describe('Browser.document', () => {
   describe('HMR', () => {
     const files = ['example/src/Hello.elm', 'example/src/Message.elm']
     beforeEach(() => {
+      cy.visit(onDevelopmentBuild('/'))
       cy.task('keepOriginal', files)
     })
 
@@ -123,6 +124,7 @@ describe('multiple Browser.element', () => {
   describe('HMR', () => {
     const files = ['example/src/Description.elm', 'example/src/ActualContentForAnotherDescription.elm']
     beforeEach(() => {
+      cy.visit(onDevelopmentBuild('/elements.html'))
       cy.task('keepOriginal', files)
     })
 
