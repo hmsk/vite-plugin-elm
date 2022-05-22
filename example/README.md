@@ -7,7 +7,7 @@ Also used for integration tests.
 
 ### Get a latest build of vite-plugin-elm
 
-```
+```sh
 cd ../
 npm i
 npm run build
@@ -18,14 +18,14 @@ or you can pick specific version from published versions.
 
 Edit `package.json`, then run `npm i`
 
-```
+```diff
 +  "vite-plugin-elm": "2.6.1",
 -  "vite-plugin-elm": "file:../"
 ```
 
 ## Run dev server
 
-```
+```sh
 npm run dev
 ```
 
@@ -35,7 +35,7 @@ npm run dev
 
 ## Production build
 
-```
+```sh
 npm run build
 ```
 
@@ -43,6 +43,6 @@ npm run build
 
 ### Try the build in local
 
-```
-npm run server # then visit localhost:3938
+```sh
+npm run serve # then visit localhost:3938
 ```
