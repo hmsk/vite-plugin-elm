@@ -31,7 +31,7 @@ npm run dev
 
 - `/`: A sample page of `Browser.document`
 - `/application.html`: A sample page of `Browser.application` with assets helpers
-- `/elements.html`: A sample page of `Browser.elements` by a combined multiple build
+- `/elements.html`: A sample page of `Browser.element` by a combined multiple build
 
 ## Production build
 
