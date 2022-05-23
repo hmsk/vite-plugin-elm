@@ -14,7 +14,7 @@ npm run build
 cd example/
 ```
 
-or you can pick specific version from published versions.
+or you can pick specific version from [published versions](https://www.npmjs.com/package/vite-plugin-elm?activeTab=versions).
 
 Edit `package.json`, then run `npm i`
 
