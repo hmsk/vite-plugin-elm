@@ -47,7 +47,7 @@ view model =
         , p [] [ text "This page works with Browser.document" ]
         , ul []
             [ li [] [ a [ href "/application.html" ] [ text "See Browser.application sample" ] ]
-            , li [] [ a [ href "/elements.html" ] [ text "See Browser.element sample" ] ]
+            , li [] [ a [ href "/elements.html" ] [ text "See Browser.element sample (works after v2.7.0-beta.1)" ] ]
             ]
         ]
     }

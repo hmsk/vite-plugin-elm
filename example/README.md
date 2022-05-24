@@ -4,7 +4,6 @@ Also used for integration tests.
 
 ## Setup
 
-
 ### Get a latest build of vite-plugin-elm
 
 ```sh
@@ -21,6 +20,12 @@ Edit `package.json`, then run `npm i`
 ```diff
 +  "vite-plugin-elm": "2.6.1",
 -  "vite-plugin-elm": "file:../"
+```
+
+## Install dependencies
+
+```sh
+npm i
 ```
 
 ## Run dev server
