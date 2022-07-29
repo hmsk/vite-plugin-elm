@@ -40,7 +40,7 @@ export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin =
 
       const modulesToCompile: ModuleNode[] = []
       compilableFiles.forEach((dependencies, compilableFile) => {
-        if (dependencies.has(file)) {
+        if (dependencies.has(path.normalize(file))) {
           const module = server.moduleGraph.getModuleById(compilableFile)
           if (module) modulesToCompile.push(module)
         }
