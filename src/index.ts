@@ -3,7 +3,7 @@
 import { toESModule } from 'elm-esm'
 //@ts-ignore
 import compiler from 'node-elm-compiler'
-import { relative } from 'path'
+import { normalize, relative } from 'path'
 import type { ModuleNode, Plugin } from 'vite'
 import { injectAssets } from './assetsInjector'
 import { injectHMR } from './hmrInjector'
@@ -40,7 +40,7 @@ export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin =
 
       const modulesToCompile: ModuleNode[] = []
       compilableFiles.forEach((dependencies, compilableFile) => {
-        if (dependencies.has(path.normalize(file))) {
+        if (dependencies.has(normalize(file))) {
           const module = server.moduleGraph.getModuleById(compilableFile)
           if (module) modulesToCompile.push(module)
         }
