@@ -1,7 +1,7 @@
 {
   "name": "vite-plugin-elm-sample",
   "private": true,
-  "version": "2.6.1",
+  "version": "2.7.2",
   "description": "A sample project to use vite-plugin-elm",
   "main": "index.js",
   "scripts": {
@@ -15,7 +15,7 @@
   "devDependencies": {
     "elm": "0.19.1-5",
     "npm-run-all": "4.1.5",
-    "serve": "13.0.2",
+    "serve": "14.0.1",
     "vite": "3.1.0",
     "vite-plugin-elm": "file:../"
   }
