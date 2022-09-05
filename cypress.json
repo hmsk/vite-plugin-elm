@@ -1,4 +1,0 @@
-{
-  "baseUrl": "http://localhost:8938",
-  "testFiles": "**/*.test.ts"
-}

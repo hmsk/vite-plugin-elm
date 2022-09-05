@@ -40,4 +40,4 @@ jobs:
           npm run test:server &
 
       - name: Run integration tests
-        uses: cypress-io/github-action@v2
+        uses: cypress-io/github-action@v4
