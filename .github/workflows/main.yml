@@ -32,12 +32,8 @@ jobs:
           npm run lint
           npm run prettier
 
-      - name: Setup example project for integration tests
-        working-directory: './example'
-        run: |
-          npm install
-          npm run build
-          npm run test:server &
-
       - name: Run integration tests
         uses: cypress-io/github-action@v4
+        with:
+          build: npm run build:example
+          start: npm run cypress:prepare
