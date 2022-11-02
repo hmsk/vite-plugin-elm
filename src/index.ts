@@ -3,8 +3,9 @@
 import { toESModule } from 'elm-esm'
 //@ts-ignore
 import compiler from 'node-elm-compiler'
-import { normalize, relative } from 'path'
+import { normalize, relative, dirname } from 'path'
 import type { ModuleNode, Plugin } from 'vite'
+import findUp from 'find-up'
 import { injectAssets } from './assetsInjector'
 import { injectHMR } from './hmrInjector'
 import { acquireLock } from './mutex'
@@ -24,6 +25,11 @@ const parseImportId = (id: string) => {
     pathname,
     withParams,
   }
+}
+
+const findClosestElmJson = async (pathname: string) => {
+  const elmJson = await findUp('elm.json', { cwd: dirname(pathname) })
+  return elmJson ? dirname(elmJson) : undefined
 }
 
 export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin => {
@@ -92,6 +98,7 @@ export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin =
           optimize: typeof optimize === 'boolean' ? optimize : !debug && isBuild,
           verbose: isBuild,
           debug: debug ?? !isBuild,
+          cwd: await findClosestElmJson(pathname),
         })
 
         const esm = injectAssets(toESModule(compiled))
