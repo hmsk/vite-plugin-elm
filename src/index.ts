@@ -26,10 +26,11 @@ const parseImportId = (id: string) => {
   }
 }
 
-export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin => {
+export const plugin = (opts?: { debug?: boolean; optimize?: boolean, compilerOptions?: any }): Plugin => {
   const compilableFiles: Map<string, Set<string>> = new Map()
   const debug = opts?.debug
   const optimize = opts?.optimize
+  const compilerOptions = opts?.compilerOptions
 
   return {
     name: 'vite-plugin-elm',
@@ -92,6 +93,7 @@ export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin =
           optimize: typeof optimize === 'boolean' ? optimize : !debug && isBuild,
           verbose: isBuild,
           debug: debug ?? !isBuild,
+          ...compilerOptions,
         })
 
         const esm = injectAssets(toESModule(compiled))
