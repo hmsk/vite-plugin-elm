@@ -4,7 +4,7 @@ const onDevelopmentBuild = (path: string) => new URL(path, DEVELOPMENT_BUILD_SER
 
 describe('Browser.document', () => {
   describe('static', () => {
-    before(() => {
+    beforeEach(() => {
       cy.visit(onDevelopmentBuild('/'))
     })
 
@@ -75,7 +75,7 @@ describe('Browser.document', () => {
 })
 
 describe('Browser.application', () => {
-  before(() => {
+  beforeEach(() => {
     cy.visit(onDevelopmentBuild('/application.html'))
   })
 
@@ -111,7 +111,7 @@ describe('Browser.application', () => {
 })
 
 describe('multiple Browser.element', () => {
-  before(() => {
+  beforeEach(() => {
     cy.visit(onDevelopmentBuild('/elements.html'))
   })
 
