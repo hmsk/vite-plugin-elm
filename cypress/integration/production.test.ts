@@ -19,7 +19,7 @@ describe('Browser.document', () => {
 })
 
 describe('Browser.application', () => {
-  before(() => {
+  beforeEach(() => {
     cy.visit(onProductionBuild('/application'))
   })
 
