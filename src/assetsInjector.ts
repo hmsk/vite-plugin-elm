@@ -1,12 +1,13 @@
 import type { Node } from 'acorn'
 import { parse } from 'acorn'
 import { fullAncestor as walk } from 'acorn-walk'
+import crypto from 'crypto'
 
 const ASSET_TAG = /'\[VITE_PLUGIN_ELM_ASSET:(?<path>.+?)\]'/g
 const HELPER_PACKAGE_IDENTIFIER = 'VITE_PLUGIN_HELPER_ASSET'
 
 const importNameFrom = (path: string) => {
-  return path.replace(/[/.\-~@?]/g, '_')
+  return '_' + crypto.createHash('sha1').update(path).digest('hex')
 }
 
 const generateImports = (paths: string[]) => {
