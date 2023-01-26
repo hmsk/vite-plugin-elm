@@ -17,7 +17,7 @@ const viteProjectPath = (dependency: string) => `/${relative(process.cwd(), depe
 const parseImportId = (id: string) => {
   const parsedId = new URL(id, 'file://')
   const pathname = parsedId.pathname
-  const valid = pathname.endsWith('.elm')
+  const valid = pathname.endsWith('.elm') && !parsedId.searchParams.has('raw')
   const withParams = parsedId.searchParams.getAll('with')
 
   return {
