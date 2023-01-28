@@ -157,3 +157,13 @@ describe('multiple Browser.element', () => {
     })
   })
 })
+
+describe('raw loading', () => {
+  before(() => {
+    cy.visit(onDevelopmentBuild('/raw.html'))
+  })
+
+  it('importing with ?raw is not blocked by the plugin', () => {
+    cy.get('head meta[name="elm:plugin"]').should('have.attr', 'content', 'module Raw exposing (main)')
+  })
+})

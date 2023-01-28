@@ -10,6 +10,7 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         application: resolve(__dirname, 'application.html'),
         elements: resolve(__dirname, 'elements.html'),
+        raw: resolve(__dirname, 'raw.html'),
       },
     },
   },

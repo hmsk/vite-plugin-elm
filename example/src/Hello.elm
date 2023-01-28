@@ -48,6 +48,7 @@ view model =
         , ul []
             [ li [] [ a [ href "/application.html" ] [ text "See Browser.application sample" ] ]
             , li [] [ a [ href "/elements.html" ] [ text "See Browser.element sample (works after v2.7.0-beta.1)" ] ]
+            , li [] [ a [ href "/raw.html" ] [ text "See raw import sample (works after v2.8.0-beta.3)" ] ]
             ]
         ]
     }
