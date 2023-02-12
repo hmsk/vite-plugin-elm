@@ -11,6 +11,7 @@
     "build": "rm -rf dist && tsc -p .",
     "lint": "eslint . --max-warnings 0",
     "prettier": "prettier --check .",
+    "prepare": "npm run build",
     "build:example": "cd ./example && npm i && npm run build",
     "test-server:dev": "cd ./example && npm run dev -- --port 8936",
     "test-server:preview": "cd ./example && npm run preview -- --port 8938",
