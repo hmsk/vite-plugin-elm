@@ -123,7 +123,7 @@ Elm.Another.init({
 For 3+ main files:
 
 ```ts
-import { Elm } from './App.elm?with=./Another.elm&./YetAnother.elm'
+import { Elm } from './App.elm?with=./Another.elm&with=./YetAnother.elm'
 ```
 
 ## Acknowledgement
