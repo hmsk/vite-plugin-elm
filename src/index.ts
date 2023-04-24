@@ -32,7 +32,7 @@ const findClosestElmJson = async (pathname: string) => {
   return elmJson ? dirname(elmJson) : undefined
 }
 
-export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin => {
+export const plugin = (opts?: { debug?: boolean; optimize?: boolean; [key: string]: unknown }): Plugin => {
   const compilableFiles: Map<string, Set<string>> = new Map()
   const debug = opts?.debug
   const optimize = opts?.optimize
@@ -94,6 +94,7 @@ export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin =
       try {
         const isBuild = process.env.NODE_ENV === 'production'
         const compiled: string = await compiler.compileToString(targets, {
+          ...opts,
           output: '.js',
           optimize: typeof optimize === 'boolean' ? optimize : !debug && isBuild,
           verbose: isBuild,
