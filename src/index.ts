@@ -3,7 +3,7 @@
 import { toESModule } from 'elm-esm'
 //@ts-ignore
 import compiler from 'node-elm-compiler'
-import { normalize, relative, dirname } from 'path'
+import { normalize, relative, dirname, resolve } from 'path'
 import type { ModuleNode, Plugin } from 'vite'
 import findUp from 'find-up'
 import { injectAssets } from './assetsInjector'
@@ -67,20 +67,7 @@ export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin =
       const { valid, pathname, withParams } = parseImportId(id)
       if (!valid) return
 
-      const accompanies = await (() => {
-        if (withParams.length > 0) {
-          const importTree = this.getModuleIds()
-          let importer = ''
-          for (const moduleId of importTree) {
-            if (moduleId === id) break
-            importer = moduleId
-          }
-          const resolveAcoompany = async (accompany: string) => (await this.resolve(accompany, importer))?.id ?? ''
-          return Promise.all(withParams.map(resolveAcoompany))
-        } else {
-          return Promise.resolve([])
-        }
-      })()
+      const accompanies = withParams.map((accompany: string) => resolve(dirname(pathname), accompany))
 
       const targets = [pathname, ...accompanies].filter((target) => target !== '')
 
