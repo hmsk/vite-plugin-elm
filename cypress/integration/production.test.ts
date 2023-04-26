@@ -32,7 +32,7 @@ describe('Browser.application', () => {
       cy.get('[alt="without option"]')
         .should('be.visible')
         .and(($img) => {
-          expect($img.attr('src')).to.be.match(/\/assets\/logo\.\d+\.jpg/)
+          expect($img.attr('src')).to.be.match(/\/assets\/logo-\d+\.jpg/)
         })
     })
 
