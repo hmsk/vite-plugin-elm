@@ -1,6 +1,6 @@
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
-import { plugin } from 'vite-plugin-elm'
+import plugin from 'vite-plugin-elm'
 
 export default defineConfig({
   plugins: [plugin()],
