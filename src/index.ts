@@ -43,7 +43,11 @@ type NodeElmCompilerOptions = {
   verbose?: boolean
 }
 
-export const plugin = (opts?: { debug?: boolean; optimize?: boolean; nodeElmCompilerOptions: NodeElmCompilerOptions }): Plugin => {
+export const plugin = (opts?: {
+  debug?: boolean
+  optimize?: boolean
+  nodeElmCompilerOptions: NodeElmCompilerOptions
+}): Plugin => {
   const compilableFiles: Map<string, Set<string>> = new Map()
   const debug = opts?.debug
   const optimize = opts?.optimize
