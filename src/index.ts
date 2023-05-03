@@ -32,10 +32,22 @@ const findClosestElmJson = async (pathname: string) => {
   return elmJson ? dirname(elmJson) : undefined
 }
 
-export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin => {
+type NodeElmCompilerOptions = {
+  cwd?: string
+  docs?: string
+  debug?: boolean
+  optimize?: boolean
+  processOpts?: Record<string, string>
+  report?: string
+  pathToElm?: string
+  verbose?: boolean
+}
+
+export const plugin = (opts?: { debug?: boolean; optimize?: boolean; nodeElmCompilerOptions: NodeElmCompilerOptions }): Plugin => {
   const compilableFiles: Map<string, Set<string>> = new Map()
   const debug = opts?.debug
   const optimize = opts?.optimize
+  const compilerOptionsOverwrite = opts?.nodeElmCompilerOptions ?? {}
 
   return {
     name: 'vite-plugin-elm',
@@ -99,6 +111,7 @@ export const plugin = (opts?: { debug?: boolean; optimize?: boolean }): Plugin =
           verbose: isBuild,
           debug: debug ?? !isBuild,
           cwd: await findClosestElmJson(pathname),
+          ...compilerOptionsOverwrite,
         })
 
         const esm = injectAssets(toESModule(compiled))
