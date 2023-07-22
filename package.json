@@ -60,7 +60,7 @@
   },
   "devDependencies": {
     "@types/node": "18.16.18",
-    "@typescript-eslint/eslint-plugin": "5.60.1",
+    "@typescript-eslint/eslint-plugin": "6.1.0",
     "@typescript-eslint/parser": "5.62.0",
     "cypress": "12.14.0",
     "eslint": "8.45.0",
