@@ -9,6 +9,9 @@ updates:
         versions:
           - 20.x
     groups:
+      acorn:
+        patterns:
+          - 'acorn*'
       eslint-family:
         patterns:
           - 'eslint'
