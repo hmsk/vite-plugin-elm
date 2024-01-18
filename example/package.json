@@ -4,6 +4,7 @@
   "version": "2.9.0",
   "description": "A sample project to use vite-plugin-elm",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
