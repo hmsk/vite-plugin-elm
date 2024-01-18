@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   embeddedLanguageFormatting: 'off',
   printWidth: 120,
   semi: false,
