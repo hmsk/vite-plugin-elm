@@ -4,7 +4,7 @@
 [![npm next channel](https://img.shields.io/npm/v/vite-plugin-elm/next?style=for-the-badge&color=yellow)](https://www.npmjs.com/package/vite-plugin-elm/v/next)
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/hmsk/vite-plugin-elm/main.yml?branch=main&style=for-the-badge)](https://github.com/hmsk/vite-plugin-elm/actions/workflows/main.yml)
 
-A plugin enables you to compile an Elm [application](https://package.elm-lang.org/packages/elm/browser/latest/Browser#application)/[document](https://package.elm-lang.org/packages/elm/browser/latest/Browser#document)/[element](https://package.elm-lang.org/packages/elm/browser/latest/Browser#element) on your [Vite](https://github.com/vitejs/vite) project. [Hot module replacement](https://vitejs.dev/guide/features.html#hot-module-replacement) works roughly in development.
+A plugin that enables us to compile an Elm [application](https://package.elm-lang.org/packages/elm/browser/latest/Browser#application), [document](https://package.elm-lang.org/packages/elm/browser/latest/Browser#document), or [element](https://package.elm-lang.org/packages/elm/browser/latest/Browser#element) within your [Vite](https://github.com/vitejs/vite) project. In development, [hot module replacement](https://vitejs.dev/guide/features.html#hot-module-replacement) works to some extent.
 
 ```ts
 import { Elm } from './MyApplication.elm'
@@ -18,7 +18,7 @@ Elm.MyApplication.init()
 npm i -D vite-plugin-elm
 ```
 
-Update `vite.config.(js|ts)`
+In `vite.config.(js|ts)`:
 
 ```ts
 import { defineConfig } from 'vite'
@@ -29,15 +29,11 @@ export default defineConfig({
 })
 ```
 
-Then you can import `.elm` file like:
+Then you can import a `.elm` file and run it like:
 
 ```ts
 import { Elm } from './Hello.elm'
-```
 
-then
-
-```ts
 // Mount "Hello" Browser.{element,document} on #root
 Elm.Hello.init({
   node: document.getElementById('root'),
@@ -45,47 +41,35 @@ Elm.Hello.init({
 })
 ```
 
-See [`/example`](/example) dir to play with an actual Vite project. And [this working website](https://github.com/hmsk/hmsk.me) may help you to learn how to use.
+You can explore the [`/example`](/example) directory to experiment with an actual Vite project. Additionally, [this functional website](https://github.com/hmsk/hmsk.me) can serve as a helpful resource to learn how to use it effectively.
 
-## Plugin Options
+## Options
 
 ### `debug` (Default: `process.env.NODE_ENV !== 'production'`)
 
-By giving a boolean, can control debug mode of Elm (means toggle Elm Debugger)
+You can control the debug mode of Elm, which toggles the Elm Debugger, by providing a boolean value.
 
 ![image](https://user-images.githubusercontent.com/85887/120060168-fd7d8600-c00a-11eb-86cd-4125fe06dc59.png)
 
 ```ts
-import { defineConfig } from 'vite'
-import elmPlugin from 'vite-plugin-elm'
-
-export default defineConfig({
-  plugins: [elmPlugin({ debug: false })]
-})
+elmPlugin({ debug: false })
 ```
 
-When it's `false`, disables debug mode in both development and production. Conversely, enables debug mode even in production by `true`. **When production build gets debug mode, Elm's compile optimization doesn't happen**.
+When set to `false`, it disables debug mode in both development and production. Conversely, setting it to `true` enables debug mode even in production. It's important to note that **when the production build has debug mode enabled, Elm's compiler optimizations do not take place**.
 
 ### `optimize` (Default: `!debug && process.env.NODE_ENV === 'production'`)
 
-By giving a boolean, can control build optimization, useful to use `Debug` [elm functions](https://package.elm-lang.org/packages/elm/core/latest/Debug)
+You can control build optimization by providing a boolean value, which can be useful for using [`Debug`](https://package.elm-lang.org/packages/elm/core/latest/Debug) functions in your Elm code.
 
 ```ts
-import { defineConfig } from 'vite'
-import elmPlugin from 'vite-plugin-elm'
-
-export default defineConfig({
-  plugins: [elmPlugin({ debug: false, optimize: false })]
-})
+elmPlugin({ debug: false, optimize: false })
 ```
 
-When true, optimize build and forbid usage of `Debug` elm functions.
-When specify optimize attribute, had to tell if need to debug or not. It's not why you want to make debug traces you want to see all actions.
+When set to `true`, it optimizes the build and prohibits the usage of Debug Elm functions. If you specify the optimize attribute, you must indicate whether debugging is needed. This is because you might want to have debug traces for the purpose of observing all actions, not necessarily for debugging specific issues.
 
 ## Static Assets Handling
 
-This plugin supports importing assets by giving a particular tag `[VITE_PLUGIN_ELM_ASSET:<path to asset>]` to leverage [Vite's asset handling](https://vitejs.dev/guide/assets.html#importing-asset-as-url).
-When Elm code has a string, this plugin replaces it with an imported asset. That string should be just a string without any concatenation.
+This plugin supports importing assets by using a specific tag `[VITE_PLUGIN_ELM_ASSET:<path to asset>]` to leverage [Vite's asset handling](https://vitejs.dev/guide/assets.html#importing-asset-as-ur). When your Elm code contains a tag, this plugin replaces that string with the imported asset. It's important to note that the string should be a standalone string without any concatenation.
 
 ```elm
 Html.img [ Html.Attributes.src "[VITE_PLUGIN_ELM_ASSET:/assets/logo.jpg]" ] []
@@ -93,9 +77,9 @@ Html.img [ Html.Attributes.src "[VITE_PLUGIN_ELM_ASSET:/assets/logo.jpg]" ] []
 
 ### Helper package
 
-By using a Elm package `elm-vite-plugin-helper`, you can shorten such the tagging:
+We can simplify the tagging process by using the Elm package `elm-vite-plugin-helper`:
 
-```
+```sh
 elm install hmsk/elm-vite-plugin-helper
 ```
 
@@ -105,9 +89,9 @@ import VitePluginHelper
 Html.img [ Html.Attributes.src <| VitePluginHelper.asset "/assets/logo.png?inline" ] []
 ```
 
-## Combine multiple main files (Experimental from `2.7.0-beta.1`)
+## Combine multiple main files (Experimental)
 
-By passing importing path via `with` URL-ish parameter(s), the plugin compiles multiple main files in a single compilation process. That generates a single `Elm` export which has multiple properties for each given main files. This way reduces bundle size comparing to a total size of importing each file separately since common modules/Elm core codes are not repeated.
+By passing importing paths via the `with` URL-ish parameter(s), the plugin compiles multiple main files in a single compilation process. This results in a single Elm export that contains multiple properties, each corresponding to a given main file. This feature helps reduce the bundle size when compared to importing each file separately because common modules and Elm core code are not repeated.
 
 ```ts
 // `Elm.App` and `Elm.Another`, both can work as like importing individually.
