@@ -5,10 +5,10 @@ import { toESModule } from 'elm-esm'
 import compiler from 'node-elm-compiler'
 import { normalize, relative, dirname } from 'path'
 import type { ModuleNode, Plugin } from 'vite'
-import findUp from 'find-up'
-import { injectAssets } from './assetsInjector'
-import { injectHMR } from './hmrInjector'
-import { acquireLock } from './mutex'
+import { findUp } from 'find-up'
+import { injectAssets } from './assetsInjector.js'
+import { injectHMR } from './hmrInjector.js'
+import { acquireLock } from './mutex.js'
 /* eslint-enable @typescript-eslint/ban-ts-comment */
 
 const trimDebugMessage = (code: string): string => code.replace(/(console\.warn\('Compiled in DEBUG mode)/, '// $1')

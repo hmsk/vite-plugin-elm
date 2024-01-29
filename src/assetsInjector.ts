@@ -56,7 +56,7 @@ export const injectAssets = (compiledESM: string) => {
 
   const ast = parse(compiledESM, { ecmaVersion: 2015, sourceType: 'module' })
   let helperFunctionName: string
-  walk(
+  walk<Node[]>(
     ast,
     (node, state) => {
       if (isLiteral(node)) {
@@ -106,7 +106,7 @@ export const injectAssets = (compiledESM: string) => {
       }
     },
     undefined,
-    null,
+    undefined,
   )
 
   if (taggedPaths.length > 0) {
