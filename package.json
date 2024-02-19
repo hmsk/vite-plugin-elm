@@ -61,7 +61,7 @@
     "node-elm-compiler": "5.0.6"
   },
   "devDependencies": {
-    "@types/node": "18.19.15",
+    "@types/node": "18.19.17",
     "@typescript-eslint/eslint-plugin": "7.0.1",
     "@typescript-eslint/parser": "7.0.1",
     "cypress": "13.6.4",
