@@ -8,6 +8,9 @@ updates:
       - dependency-name: '@types/node'
         versions:
           - 20.x
+      - dependency-name: 'eslint'
+        versions:
+          - 9.x
     groups:
       acorn:
         patterns:
