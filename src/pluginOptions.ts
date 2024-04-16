@@ -1,33 +1,29 @@
-interface NodeElmCompilerOptions {
-  cwd?: string
-  docs?: string
-  debug?: boolean
-  optimize?: boolean
-  processOpts?: Record<string, string>
-  report?: string
-  pathToElm?: string
-  verbose?: boolean
-}
+import { NodeElmCompilerOptions } from './compiler.js'
 
 interface InputOptions {
   debug?: boolean
   optimize?: boolean
-  nodeElmCompilerOptions?: NodeElmCompilerOptions
+  nodeElmCompilerOptions?: Partial<NodeElmCompilerOptions>
 }
+
+type DeterminedKeys = 'debug' | 'optimize' | 'verbose'
 
 interface ParsedOptions {
   isBuild: boolean
-  debug: boolean
-  optimize: boolean
-  nodeElmCompilerOptionsOverwrite: NodeElmCompilerOptions
+  nodeElmCompilerOptions: Pick<NodeElmCompilerOptions, DeterminedKeys> &
+    Partial<Omit<NodeElmCompilerOptions, DeterminedKeys>>
 }
 
 export const parseOptions = (inputOptions: InputOptions): ParsedOptions => {
   const isBuild = process.env.NODE_ENV === 'production'
+
   return {
     isBuild,
-    debug: inputOptions.debug ?? !isBuild,
-    optimize: typeof inputOptions.optimize === 'boolean' ? inputOptions.optimize : !inputOptions.debug && isBuild,
-    nodeElmCompilerOptionsOverwrite: inputOptions.nodeElmCompilerOptions ?? {},
+    nodeElmCompilerOptions: {
+      debug: inputOptions.debug ?? !isBuild,
+      optimize: typeof inputOptions.optimize === 'boolean' ? inputOptions.optimize : !inputOptions.debug && isBuild,
+      verbose: isBuild,
+      ...(inputOptions.nodeElmCompilerOptions ?? {}),
+    },
   }
 }

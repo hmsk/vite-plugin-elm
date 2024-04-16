@@ -10,6 +10,7 @@ import { injectAssets } from './assetsInjector.js'
 import { injectHMR } from './hmrInjector.js'
 import { acquireLock } from './mutex.js'
 import { parseOptions } from './pluginOptions.js'
+import { compile } from './compiler.js'
 /* eslint-enable @typescript-eslint/ban-ts-comment */
 
 const trimDebugMessage = (code: string): string => code.replace(/(console\.warn\('Compiled in DEBUG mode)/, '// $1')
@@ -92,13 +93,9 @@ export const plugin = (userOptions: Parameters<typeof parseOptions>[0] = {}): Pl
 
       const releaseLock = await acquireLock()
       try {
-        const compiled: string = await compiler.compileToString(targets, {
-          output: '.js',
-          optimize: options.optimize,
-          verbose: options.isBuild,
-          debug: options.debug,
+        const compiled = await compile(targets, {
           cwd: await findClosestElmJson(pathname),
-          ...options.nodeElmCompilerOptionsOverwrite,
+          ...options.nodeElmCompilerOptions,
         })
 
         const esm = injectAssets(toESModule(compiled))

@@ -3,23 +3,26 @@ import { parseOptions } from './pluginOptions.js'
 
 type Result = ReturnType<typeof parseOptions>
 
-const defaultDevOptions: Result = {
-  isBuild: false,
-  debug: true,
-  optimize: false,
-  nodeElmCompilerOptionsOverwrite: {},
-}
-
 describe('in dev build', () => {
   it('returns default in dev', () => {
-    expect(parseOptions({})).toEqual(defaultDevOptions)
+    expect(parseOptions({})).toEqual<Result>({
+      isBuild: false,
+      nodeElmCompilerOptions: {
+        debug: true,
+        optimize: false,
+        verbose: false,
+      },
+    })
   })
 
   it('overwrites debug and optimize as it given', () => {
-    expect(parseOptions({ debug: false, optimize: true })).toEqual({
-      ...defaultDevOptions,
-      debug: false,
-      optimize: true,
+    expect(parseOptions({ debug: false, optimize: true })).toEqual<Result>({
+      isBuild: false,
+      nodeElmCompilerOptions: {
+        debug: false,
+        optimize: true,
+        verbose: false,
+      },
     })
   })
 
@@ -28,9 +31,14 @@ describe('in dev build', () => {
       parseOptions({
         nodeElmCompilerOptions: { pathToElm: 'wherever' },
       }),
-    ).toEqual({
-      ...defaultDevOptions,
-      nodeElmCompilerOptionsOverwrite: { pathToElm: 'wherever' },
+    ).toEqual<Result>({
+      isBuild: false,
+      nodeElmCompilerOptions: {
+        debug: true,
+        optimize: false,
+        verbose: false,
+        pathToElm: 'wherever',
+      },
     })
   })
 })
@@ -41,29 +49,35 @@ describe('in production build', () => {
   })
 
   it('returns default for prod build', () => {
-    expect(parseOptions({})).toEqual({
-      ...defaultDevOptions,
+    expect(parseOptions({})).toEqual<Result>({
       isBuild: true,
-      debug: false,
-      optimize: true,
+      nodeElmCompilerOptions: {
+        debug: false,
+        optimize: true,
+        verbose: true,
+      },
     })
   })
 
   it('overwrites debug and optimize per just only debug', () => {
-    expect(parseOptions({ debug: true })).toEqual({
-      ...defaultDevOptions,
+    expect(parseOptions({ debug: true })).toEqual<Result>({
       isBuild: true,
-      debug: true,
-      optimize: false,
+      nodeElmCompilerOptions: {
+        debug: true,
+        optimize: false,
+        verbose: true,
+      },
     })
   })
 
   it('overwrites debug and optimize', () => {
-    expect(parseOptions({ debug: true, optimize: false })).toEqual({
-      ...defaultDevOptions,
+    expect(parseOptions({ debug: true, optimize: false })).toEqual<Result>({
       isBuild: true,
-      debug: true,
-      optimize: false,
+      nodeElmCompilerOptions: {
+        debug: true,
+        optimize: false,
+        verbose: true,
+      },
     })
   })
 })
