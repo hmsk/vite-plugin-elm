@@ -32,6 +32,10 @@ jobs:
           npm run lint
           npm run prettier
 
+      - name: Run unit tests
+        run: |
+          npm run test:ci
+
       - name: Run integration tests
         uses: cypress-io/github-action@v4
         with:
