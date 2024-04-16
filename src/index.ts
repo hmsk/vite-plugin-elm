@@ -9,6 +9,7 @@ import { findUp } from 'find-up'
 import { injectAssets } from './assetsInjector.js'
 import { injectHMR } from './hmrInjector.js'
 import { acquireLock } from './mutex.js'
+import { parseOptions } from './pluginOptions.js'
 /* eslint-enable @typescript-eslint/ban-ts-comment */
 
 const trimDebugMessage = (code: string): string => code.replace(/(console\.warn\('Compiled in DEBUG mode)/, '// $1')
@@ -32,28 +33,9 @@ const findClosestElmJson = async (pathname: string) => {
   return elmJson ? dirname(elmJson) : undefined
 }
 
-type NodeElmCompilerOptions = {
-  cwd?: string
-  docs?: string
-  debug?: boolean
-  optimize?: boolean
-  processOpts?: Record<string, string>
-  report?: string
-  pathToElm?: string
-  verbose?: boolean
-}
-
-export const plugin = (
-  opts: {
-    debug?: boolean
-    optimize?: boolean
-    nodeElmCompilerOptions?: NodeElmCompilerOptions
-  } = {},
-): Plugin => {
+export const plugin = (userOptions: Parameters<typeof parseOptions>[0] = {}): Plugin => {
+  const options = parseOptions(userOptions)
   const compilableFiles: Map<string, Set<string>> = new Map()
-  const debug = opts.debug
-  const optimize = opts.optimize
-  const compilerOptionsOverwrite = opts.nodeElmCompilerOptions ?? {}
 
   return {
     name: 'vite-plugin-elm',
@@ -93,8 +75,8 @@ export const plugin = (
             if (moduleId === id) break
             importer = moduleId
           }
-          const resolveAcoompany = async (accompany: string) => (await this.resolve(accompany, importer))?.id ?? ''
-          return Promise.all(withParams.map(resolveAcoompany))
+          const resolveAccompany = async (accompany: string) => (await this.resolve(accompany, importer))?.id ?? ''
+          return Promise.all(withParams.map(resolveAccompany))
         } else {
           return Promise.resolve([])
         }
@@ -110,14 +92,13 @@ export const plugin = (
 
       const releaseLock = await acquireLock()
       try {
-        const isBuild = process.env.NODE_ENV === 'production'
         const compiled: string = await compiler.compileToString(targets, {
           output: '.js',
-          optimize: typeof optimize === 'boolean' ? optimize : !debug && isBuild,
-          verbose: isBuild,
-          debug: debug ?? !isBuild,
+          optimize: options.optimize,
+          verbose: options.isBuild,
+          debug: options.debug,
           cwd: await findClosestElmJson(pathname),
-          ...compilerOptionsOverwrite,
+          ...options.nodeElmCompilerOptionsOverwrite,
         })
 
         const esm = injectAssets(toESModule(compiled))
@@ -128,7 +109,7 @@ export const plugin = (
         }
 
         return {
-          code: isBuild ? esm : trimDebugMessage(injectHMR(esm, dependencies.map(viteProjectPath))),
+          code: options.isBuild ? esm : trimDebugMessage(injectHMR(esm, dependencies.map(viteProjectPath))),
           map: null,
         }
       } catch (e) {
