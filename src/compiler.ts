@@ -41,15 +41,16 @@ export const compile = async (
           cwd: findClosestElmJson(targets[0]),
           ...options,
         })
-
+  console.error('compiled:', compiled)
   return injectAssets(toESModule(compiled))
 }
 
 const runCommandAndCapture = async (command: string): Promise<string> => {
   try {
-    const { stdout } = await promisify(exec)(command)
+    const { stdout, stderr } = await promisify(exec)(command)
+    console.error(stderr)
     return stdout
   } catch (e) {
-    throw 'Failed to run command'
+    throw `Failed to run command: ${e} `
   }
 }

@@ -34,5 +34,5 @@ it('executes manual command which fails', async () => {
     compile(['a', 'b', 'c'], {
       command: () => `whatever`,
     }),
-  ).rejects.toBe('Failed to run command')
+  ).rejects.toMatch(/Failed to run command/)
 })
