@@ -1,17 +1,11 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-//@ts-ignore
-import { toESModule } from 'elm-esm'
-//@ts-ignore
+//@ts-expect-error typing isn't provided
 import compiler from 'node-elm-compiler'
-import { normalize, relative, dirname } from 'path'
+import { normalize, relative } from 'path'
 import type { ModuleNode, Plugin } from 'vite'
-import { findUp } from 'find-up'
-import { injectAssets } from './assetsInjector.js'
 import { injectHMR } from './hmrInjector.js'
 import { acquireLock } from './mutex.js'
 import { parseOptions } from './pluginOptions.js'
 import { compile } from './compiler.js'
-/* eslint-enable @typescript-eslint/ban-ts-comment */
 
 const trimDebugMessage = (code: string): string => code.replace(/(console\.warn\('Compiled in DEBUG mode)/, '// $1')
 const viteProjectPath = (dependency: string) => `/${relative(process.cwd(), dependency)}`
@@ -27,11 +21,6 @@ const parseImportId = (id: string) => {
     pathname,
     withParams,
   }
-}
-
-const findClosestElmJson = async (pathname: string) => {
-  const elmJson = await findUp('elm.json', { cwd: dirname(pathname) })
-  return elmJson ? dirname(elmJson) : undefined
 }
 
 export const plugin = (userOptions: Parameters<typeof parseOptions>[0] = {}): Plugin => {
@@ -93,12 +82,7 @@ export const plugin = (userOptions: Parameters<typeof parseOptions>[0] = {}): Pl
 
       const releaseLock = await acquireLock()
       try {
-        const compiled = await compile(targets, {
-          cwd: await findClosestElmJson(pathname),
-          ...options.nodeElmCompilerOptions,
-        })
-
-        const esm = injectAssets(toESModule(compiled))
+        const compiled = await compile(targets, options.nodeElmCompilerOptions)
 
         // Apparently `addWatchFile` may not exist: https://github.com/hmsk/vite-plugin-elm/pull/36
         if (this.addWatchFile) {
@@ -106,7 +90,7 @@ export const plugin = (userOptions: Parameters<typeof parseOptions>[0] = {}): Pl
         }
 
         return {
-          code: options.isBuild ? esm : trimDebugMessage(injectHMR(esm, dependencies.map(viteProjectPath))),
+          code: options.isBuild ? compiled : trimDebugMessage(injectHMR(compiled, dependencies.map(viteProjectPath))),
           map: null,
         }
       } catch (e) {
