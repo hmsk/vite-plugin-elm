@@ -82,7 +82,7 @@ export const plugin = (userOptions: Parameters<typeof parseOptions>[0] = {}): Pl
 
       const releaseLock = await acquireLock()
       try {
-        const compiled = await compile(targets, options.nodeElmCompilerOptions)
+        const compiled = await compile(targets, options.compilerOptions)
 
         // Apparently `addWatchFile` may not exist: https://github.com/hmsk/vite-plugin-elm/pull/36
         if (this.addWatchFile) {

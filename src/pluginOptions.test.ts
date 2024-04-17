@@ -7,7 +7,7 @@ describe('in dev build', () => {
   it('returns default in dev', () => {
     expect(parseOptions({})).toEqual<Result>({
       isBuild: false,
-      nodeElmCompilerOptions: {
+      compilerOptions: {
         debug: true,
         optimize: false,
         verbose: false,
@@ -18,7 +18,7 @@ describe('in dev build', () => {
   it('overwrites debug and optimize as it given', () => {
     expect(parseOptions({ debug: false, optimize: true })).toEqual<Result>({
       isBuild: false,
-      nodeElmCompilerOptions: {
+      compilerOptions: {
         debug: false,
         optimize: true,
         verbose: false,
@@ -33,11 +33,25 @@ describe('in dev build', () => {
       }),
     ).toEqual<Result>({
       isBuild: false,
-      nodeElmCompilerOptions: {
+      compilerOptions: {
         debug: true,
         optimize: false,
         verbose: false,
         pathToElm: 'wherever',
+      },
+    })
+  })
+
+  it('accepts manual command which omits options for node-elm-compiler', () => {
+    expect(
+      parseOptions({
+        nodeElmCompilerOptions: { pathToElm: 'wherever' },
+        compiler: { command: () => 'special command' },
+      }),
+    ).toEqual<Result>({
+      isBuild: false,
+      compilerOptions: {
+        command: expect.any(Function),
       },
     })
   })
@@ -51,7 +65,7 @@ describe('in production build', () => {
   it('returns default for prod build', () => {
     expect(parseOptions({})).toEqual<Result>({
       isBuild: true,
-      nodeElmCompilerOptions: {
+      compilerOptions: {
         debug: false,
         optimize: true,
         verbose: true,
@@ -62,7 +76,7 @@ describe('in production build', () => {
   it('overwrites debug and optimize per just only debug', () => {
     expect(parseOptions({ debug: true })).toEqual<Result>({
       isBuild: true,
-      nodeElmCompilerOptions: {
+      compilerOptions: {
         debug: true,
         optimize: false,
         verbose: true,
@@ -73,7 +87,7 @@ describe('in production build', () => {
   it('overwrites debug and optimize', () => {
     expect(parseOptions({ debug: true, optimize: false })).toEqual<Result>({
       isBuild: true,
-      nodeElmCompilerOptions: {
+      compilerOptions: {
         debug: true,
         optimize: false,
         verbose: true,

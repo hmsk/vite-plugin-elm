@@ -1,17 +1,21 @@
-import { NodeElmCompilerOptions } from './compiler.js'
+import { ManualCommand, NodeElmCompilerOptions } from './compiler.js'
 
 interface InputOptions {
   debug?: boolean
   optimize?: boolean
   nodeElmCompilerOptions?: Partial<NodeElmCompilerOptions>
+  compiler?: {
+    command: (targets: string[]) => string
+  }
 }
 
 type DeterminedKeys = 'debug' | 'optimize' | 'verbose'
 
 interface ParsedOptions {
   isBuild: boolean
-  nodeElmCompilerOptions: Pick<NodeElmCompilerOptions, DeterminedKeys> &
-    Partial<Omit<NodeElmCompilerOptions, DeterminedKeys>>
+  compilerOptions:
+    | (Pick<NodeElmCompilerOptions, DeterminedKeys> & Partial<Omit<NodeElmCompilerOptions, DeterminedKeys>>)
+    | ManualCommand
 }
 
 export const parseOptions = (inputOptions: InputOptions): ParsedOptions => {
@@ -19,7 +23,7 @@ export const parseOptions = (inputOptions: InputOptions): ParsedOptions => {
 
   return {
     isBuild,
-    nodeElmCompilerOptions: {
+    compilerOptions: inputOptions.compiler ?? {
       debug: inputOptions.debug ?? !isBuild,
       optimize: typeof inputOptions.optimize === 'boolean' ? inputOptions.optimize : !inputOptions.debug && isBuild,
       verbose: isBuild,
