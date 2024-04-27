@@ -16,7 +16,7 @@
   "devDependencies": {
     "elm": "0.19.1-6",
     "elm-optimize-level-2": "0.3.5",
-    "vite": "5.2.8",
+    "vite": "5.2.10",
     "vite-plugin-elm": "file:../"
   }
 }
