@@ -14,6 +14,7 @@
     "prettier": "prettier --check .",
     "prepare": "npm run build",
     "build:example": "cd ./example && npm i && npm run build",
+    "build:example:eol2": "cd ./example && npm run build:eol2",
     "test": "vitest",
     "test:ci": "vitest run",
     "test-server:dev": "cd ./example && npm run dev -- --port 8936",

@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 import plugin from 'vite-plugin-elm'
 
 const outputDir = process.env.GITHUB_WORKSPACE ?? __dirname
-const compileWithElmOptimizeLevel2 = (targets) => `npx elm-optimize-level-2 -O3 --output ${outputDir}/elm.js ${targets[0]} &> /dev/null && cat ${outputDir}/elm.js && rm -f ${outputDir}/elm.js &> /dev/null`;
+const compileWithElmOptimizeLevel2 = (targets) => `npx elm-optimize-level-2 -O3 --output ${outputDir}/elm.js ${targets[0]} > /dev/null && cat ${outputDir}/elm.js && rm -f ${outputDir}/elm.js > /dev/null`;
 
 export default defineConfig({
   plugins: [plugin(
