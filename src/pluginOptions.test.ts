@@ -46,12 +46,12 @@ describe('in dev build', () => {
     expect(
       parseOptions({
         nodeElmCompilerOptions: { pathToElm: 'wherever' },
-        compiler: { command: () => 'special command' },
+        compiler: { compile: async () => 'compiled' },
       }),
     ).toEqual<Result>({
       isBuild: false,
       compilerOptions: {
-        command: expect.any(Function),
+        compile: expect.any(Function),
       },
     })
   })

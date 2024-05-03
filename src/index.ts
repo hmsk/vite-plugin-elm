@@ -1,5 +1,5 @@
 //@ts-expect-error typing isn't provided
-import compiler from 'node-elm-compiler'
+import nodeElmcompiler from 'node-elm-compiler'
 import { normalize, relative } from 'path'
 import type { ModuleNode, Plugin } from 'vite'
 import { injectHMR } from './hmrInjector.js'
@@ -76,7 +76,7 @@ export const plugin = (userOptions: Parameters<typeof parseOptions>[0] = {}): Pl
 
       compilableFiles.delete(id)
       const dependencies = (
-        await Promise.all<string[]>(targets.map((target) => compiler.findAllDependencies(target) as string[]))
+        await Promise.all<string[]>(targets.map((target) => nodeElmcompiler.findAllDependencies(target) as string[]))
       ).flat()
       compilableFiles.set(id, new Set([...accompanies, ...dependencies]))
 

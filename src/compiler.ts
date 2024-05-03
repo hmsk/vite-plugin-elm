@@ -4,8 +4,6 @@ import { toESModule } from 'elm-esm'
 import nodeElmCompiler from 'node-elm-compiler'
 import { findUpSync } from 'find-up'
 import { dirname } from 'path'
-import { exec } from 'node:child_process'
-import { promisify } from 'node:util'
 
 import { injectAssets } from './assetsInjector.js'
 
@@ -20,8 +18,8 @@ export interface NodeElmCompilerOptions {
   verbose: boolean
 }
 
-export interface ManualCommand {
-  command: (targets: string[]) => string
+export interface CustomCompiler {
+  compile: (targets: string[]) => Promise<string>
 }
 
 const findClosestElmJson = (pathname: string) => {
@@ -31,11 +29,11 @@ const findClosestElmJson = (pathname: string) => {
 
 export const compile = async (
   targets: string[],
-  options: Partial<NodeElmCompilerOptions> | ManualCommand,
+  options: Partial<NodeElmCompilerOptions> | CustomCompiler,
 ): Promise<string> => {
   const compiled =
-    'command' in options
-      ? await runCommandAndCapture(options.command(targets))
+    'compile' in options
+      ? await runCustomCompiler(targets, options.compile)
       : await nodeElmCompiler.compileToString(targets, {
           output: '.js',
           cwd: findClosestElmJson(targets[0]),
@@ -44,12 +42,8 @@ export const compile = async (
   return injectAssets(toESModule(compiled))
 }
 
-const runCommandAndCapture = async (command: string): Promise<string> => {
-  try {
-    const { stdout, stderr } = await promisify(exec)(command)
-    console.error(stderr)
-    return stdout
-  } catch (e) {
-    throw `Failed to run command: ${e} `
-  }
+const runCustomCompiler = async (targets: string[], compile: CustomCompiler['compile']) => {
+  return compile(targets).catch((e) => {
+    throw `Failed to run command: ${e}`
+  })
 }

@@ -24,7 +24,7 @@ it('calls node-elm-compiler', async () => {
 it('executes manual command', async () => {
   expect(
     await compile(['a', 'b', 'c'], {
-      command: () => `echo "${compiled.replace('$', '\\$')}"`,
+      compile: async (targets) => (targets[1] === 'b' ? compiled : ''),
     }),
   ).toMatch(/export const Elm = {'Hello':/)
 })
@@ -32,7 +32,7 @@ it('executes manual command', async () => {
 it('executes manual command which fails', async () => {
   expect(
     compile(['a', 'b', 'c'], {
-      command: () => `whatever`,
+      compile: async () => Promise.reject('sad'),
     }),
   ).rejects.toMatch(/Failed to run command/)
 })

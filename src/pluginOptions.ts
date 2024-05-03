@@ -1,12 +1,10 @@
-import { ManualCommand, NodeElmCompilerOptions } from './compiler.js'
+import { CustomCompiler, NodeElmCompilerOptions } from './compiler.js'
 
 interface InputOptions {
   debug?: boolean
   optimize?: boolean
   nodeElmCompilerOptions?: Partial<NodeElmCompilerOptions>
-  compiler?: {
-    command: (targets: string[]) => string
-  }
+  compiler?: CustomCompiler
 }
 
 type DeterminedKeys = 'debug' | 'optimize' | 'verbose'
@@ -15,7 +13,7 @@ interface ParsedOptions {
   isBuild: boolean
   compilerOptions:
     | (Pick<NodeElmCompilerOptions, DeterminedKeys> & Partial<Omit<NodeElmCompilerOptions, DeterminedKeys>>)
-    | ManualCommand
+    | CustomCompiler
 }
 
 export const parseOptions = (inputOptions: InputOptions): ParsedOptions => {
