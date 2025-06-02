@@ -65,7 +65,7 @@
     "node-elm-compiler": "5.0.6"
   },
   "devDependencies": {
-    "@types/node": "18.19.100",
+    "@types/node": "18.19.110",
     "cypress": "14.4.0",
     "eslint": "8.57.1",
     "eslint-config-prettier": "10.1.2",
