@@ -1,6 +1,7 @@
 //@ts-expect-error typing isn't provided
 import nodeElmcompiler from 'node-elm-compiler'
 import { normalize, relative } from 'path'
+import * as path from 'path'
 import type { ModuleNode, Plugin } from 'vite'
 import { injectHMR } from './hmrInjector.js'
 import { acquireLock } from './mutex.js'
@@ -30,6 +31,25 @@ export const plugin = (userOptions: Parameters<typeof parseOptions>[0] = {}): Pl
   return {
     name: 'vite-plugin-elm',
     enforce: 'pre',
+    resolveId(source, importer) {
+      if (source.endsWith('.elm')) {
+        if (source.startsWith('/')) {
+          return {
+            id: source,
+            external: false,
+          }
+        }
+        if (!importer) {
+          return null
+        }
+        const absolutePath = path.resolve(path.dirname(importer), source)
+        return {
+          id: absolutePath,
+          external: false,
+        }
+      }
+      return null
+    },
     handleHotUpdate({ file, server, modules }) {
       const { valid } = parseImportId(file)
       if (!valid) return

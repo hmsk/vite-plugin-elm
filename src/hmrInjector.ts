@@ -45,7 +45,7 @@ if (import.meta.hot) {
 
   import.meta.hot.accept()
   import.meta.hot.accept([
-    "${dependencies.join('", "')}"
+    ${dependencies.length < 1 ? '' : '"' + dependencies.join('", "') + '"'}
   ], () => { console.log("[vite-plugin-elm] Dependency is updated") })
 
   import.meta.hot.on('hot-update-dependents', (data) => {
