@@ -95,6 +95,7 @@ if (import.meta.hot) {
   }
 
   const isFullscreenApp = () => typeof elmSymbol("elm$browser$Browser$application") !== 'undefined' || typeof elmSymbol("elm$browser$Browser$document") !== 'undefined'
+  const isPlatformWorker = () => typeof elmSymbol("elm$core$Platform$worker") !== 'undefined'
 
   const wrapDomNode = (node) => {
     const dummyNode = document.createElement("div")
@@ -116,7 +117,9 @@ if (import.meta.hot) {
         let domNode = null
         let flags = undefined
         if (typeof args !== 'undefined') {
-          domNode = args['node'] && !isFullscreenApp() ? wrapDomNode(args['node']) : document.body
+          domNode = isPlatformWorker() ? null
+            : args['node'] && !isFullscreenApp() ? wrapDomNode(args['node'])
+            : document.body
           flags = args['flags']
         } else {
           domNode = document.body
@@ -137,15 +140,15 @@ if (import.meta.hot) {
     swappingInstance = instance
 
     const containerNode = instance.domNode
-    while (containerNode.lastChild) {
+    while (!isPlatformWorker() && containerNode.lastChild) {
       containerNode.removeChild(containerNode.lastChild)
     }
 
     const m = getAt(instance.path.split('.'), Elm)
     if (m) {
       const args = { flags: instance.flags }
-      if (containerNode === document.body) {
-        // fullscreen
+      if (isPlatformWorker() || containerNode === document.body) {
+        // fullscreen or worker
       } else {
         const nodeForEmbed = document.createElement("div")
         containerNode.appendChild(nodeForEmbed)
@@ -344,7 +347,7 @@ if (import.meta.hot) {
   const swapInstances = (Elm) => {
     const removedInstances = []
     Object.entries(instances).forEach(([id, instance]) => {
-      if (instance.domNode.parentNode) {
+      if (isPlatformWorker() || instance.domNode.parentNode) {
         swap(Elm, instance)
       } else {
         removedInstances.push(id)
@@ -352,7 +355,7 @@ if (import.meta.hot) {
     })
 
     removedInstances.forEach((id) => {
-      delete instance[id]
+      delete instances[id]
     })
 
     findPublicModules(Elm).forEach((m) => {
