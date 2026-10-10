@@ -65,11 +65,14 @@
     "node-elm-compiler": "5.0.6"
   },
   "devDependencies": {
-    "@typescript/native": "npm:typescript@7.0.2",
+    "@eslint/eslintrc": "3.3.7",
+    "@eslint/js": "10.0.1",
     "@types/node": "26.6.5",
+    "@typescript/native": "npm:typescript@7.0.2",
     "cypress": "16.1.1",
     "eslint": "10.12.0",
     "eslint-config-prettier": "10.1.8",
+    "globals": "17.13.0",
     "npm-run-all": "4.1.5",
     "prettier": "3.9.10",
     "typescript": "npm:@typescript/typescript6@6.0.2",
