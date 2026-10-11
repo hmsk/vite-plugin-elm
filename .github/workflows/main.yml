@@ -41,6 +41,8 @@ jobs:
         with:
           build: npm run build:example
           start: npm run cypress:prepare
+        run: |
+          npm run cypress:run
 
       - name: Make sure we can compile with eol2 via command line
         run: |
