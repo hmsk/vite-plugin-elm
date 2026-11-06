@@ -54,8 +54,7 @@ export const injectAssets = (compiledESM: string) => {
     end: number
   }[] = []
 
-  // Elm 0.19.2 requires at least ES2019: https://github.com/elm/compiler/issues/2360
-  const ast = parse(compiledESM, { ecmaVersion: 2019, sourceType: 'module' })
+  const ast = parse(compiledESM, { ecmaVersion: 'latest', sourceType: 'module' })
   let helperFunctionName: string
   walk<Node[]>(
     ast,
