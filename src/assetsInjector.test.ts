@@ -13,7 +13,7 @@ describe('injectAssets', () => {
   // Elm 0.19.2 emits U+2028/U+2029 as-is in string literals, which is valid only since ES2019
   // https://github.com/elm/compiler/issues/2360
   it('parses line and paragraph separators in string literals', () => {
-    const compiled = `var separators = '  ';`
+    const compiled = `var separators = '${String.fromCodePoint(0x2028, 0x2029)}';`
 
     expect(injectAssets(compiled)).toBe(compiled)
   })
