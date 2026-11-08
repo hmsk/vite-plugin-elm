@@ -43,10 +43,12 @@ if (import.meta.hot) {
   let initializingInstance = null
   let swappingInstance = null
 
-  import.meta.hot.accept()
-  import.meta.hot.accept([
-    "${dependencies.join('", "')}"
-  ], () => { console.log("[vite-plugin-elm] Dependency is updated") })
+  import.meta.hot.accept()${
+    dependencies.length > 0
+      ? `
+  import.meta.hot.accept(${JSON.stringify(dependencies)}, () => { console.log("[vite-plugin-elm] Dependency is updated") })`
+      : ''
+  }
 
   import.meta.hot.on('hot-update-dependents', (data) => {
     console.log("[vite-plugin-elm] Request to hot update dependents: " + data.join(", "))
