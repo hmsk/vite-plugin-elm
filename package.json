@@ -5,7 +5,8 @@
   "exports": "./dist/index.js",
   "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/*.test.*"
   ],
   "types": "./dist/index.d.ts",
   "scripts": {
@@ -50,7 +51,9 @@
     "Jonas Coch <jonas.coch@bellroy.com>",
     "Matt Polzin <mpolzin@workwithopal.com>",
     "Ryan Schlesinger <ryan@ryanschlesinger.com>",
-    "Zach Krzyzanowski <zkrzyz@gmail.com>"
+    "Zach Krzyzanowski <zkrzyz@gmail.com>",
+    "Simon Lydell <simon.lydell@gmail.com>",
+    "Andreas Lundkvist <andreas@galdiuz.com>"
   ],
   "license": "MIT",
   "bugs": {
@@ -78,7 +81,7 @@
     "vitest": "3.2.7"
   },
   "peerDependencies": {
-    "vite": ">= 5.0.0"
+    "vite": "^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0"
   },
   "allowScripts": {
     "cypress": true
