@@ -66,6 +66,18 @@ describe('multiple Browser.element', () => {
   })
 })
 
+describe('Platform.worker', () => {
+  before(() => {
+    cy.visit(onProductionBuild('/worker'))
+  })
+
+  it('seems to be working', () => {
+    cy.contains('Pong from Elm worker to the main thread')
+    cy.contains('Pong from Elm worker to a Web Worker')
+    cy.contains('Browser.element bundled with Platform.worker')
+  })
+})
+
 describe('raw loading', () => {
   before(() => {
     cy.visit(onProductionBuild('/raw'))

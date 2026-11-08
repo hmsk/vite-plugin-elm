@@ -91,13 +91,13 @@ if (import.meta.hot) {
     const instance = {
       id, path, domNode, flags, portSubscribes, portSends,
       lastState: null,
-      initialState: null
+      initialState: null,
+      isWorker: false
     }
     return instances[id] = instance
   }
 
   const isFullscreenApp = () => typeof elmSymbol("elm$browser$Browser$application") !== 'undefined' || typeof elmSymbol("elm$browser$Browser$document") !== 'undefined'
-  const isPlatformWorker = () => typeof elmSymbol("elm$core$Platform$worker") !== 'undefined'
 
   const wrapDomNode = (node) => {
     const dummyNode = document.createElement("div")
@@ -119,15 +119,15 @@ if (import.meta.hot) {
         let domNode = null
         let flags = undefined
         if (typeof args !== 'undefined') {
-          domNode = isPlatformWorker() ? null
-            : args['node'] && !isFullscreenApp() ? wrapDomNode(args['node'])
-            : document.body
+          if (args['node'] && !isFullscreenApp()) domNode = wrapDomNode(args['node'])
           flags = args['flags']
-        } else {
-          domNode = document.body
         }
+        // There is no document in a Web Worker
+        if (domNode === null && typeof document !== 'undefined') domNode = document.body
         initializingInstance = registerInstance(domNode, flags, path, portSubscribes, portSends)
         elm = originalInit(args)
+        // Platform.worker owns no DOM, so leave the page as it is on swapping
+        if (initializingInstance.isWorker) initializingInstance.domNode = null
         wrapPorts(elm, portSubscribes, portSends)
         initializingInstance = null
         return elm
@@ -142,15 +142,15 @@ if (import.meta.hot) {
     swappingInstance = instance
 
     const containerNode = instance.domNode
-    while (!isPlatformWorker() && containerNode.lastChild) {
+    while (containerNode && containerNode.lastChild) {
       containerNode.removeChild(containerNode.lastChild)
     }
 
     const m = getAt(instance.path.split('.'), Elm)
     if (m) {
       const args = { flags: instance.flags }
-      if (isPlatformWorker() || containerNode === document.body) {
-        // fullscreen or worker
+      if (!containerNode || containerNode === document.body) {
+        // worker or fullscreen
       } else {
         const nodeForEmbed = document.createElement("div")
         containerNode.appendChild(nodeForEmbed)
@@ -266,6 +266,9 @@ if (import.meta.hot) {
   const initialize = _Platform_initialize
   _Platform_initialize = (flagDecoder, args, init, update, subscriptions, stepperBuilder) => {
     const instance = initializingInstance || swappingInstance
+    // _Platform_worker passes \`function() { return function() {} }\` while every
+    // Browser program passes \`function(sendToApp, initialModel)\`
+    if (instance) instance.isWorker = stepperBuilder.length === 0
     let tryFirstRender = !!swappingInstance
 
     const hookedInit = (args) => {
@@ -349,7 +352,7 @@ if (import.meta.hot) {
   const swapInstances = (Elm) => {
     const removedInstances = []
     Object.entries(instances).forEach(([id, instance]) => {
-      if (isPlatformWorker() || instance.domNode.parentNode) {
+      if (instance.domNode === null || instance.domNode.parentNode) {
         swap(Elm, instance)
       } else {
         removedInstances.push(id)

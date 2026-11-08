@@ -158,6 +158,59 @@ describe('multiple Browser.element', () => {
   })
 })
 
+describe('Platform.worker', () => {
+  beforeEach(() => {
+    cy.visit(onDevelopmentBuild('/worker.html'))
+  })
+
+  it('seems to be working', () => {
+    cy.contains('Pong from Elm worker to the main thread')
+    cy.contains('Pong from Elm worker to a Web Worker')
+    cy.contains('Browser.element bundled with Platform.worker')
+  })
+
+  describe('HMR', () => {
+    const files = ['example/src/Worker.elm', 'example/src/WorkerCompanion.elm']
+    beforeEach(() => {
+      cy.task('keepOriginal', files)
+    })
+
+    afterEach(() => {
+      cy.task('restoreOriginal', files)
+    })
+
+    it('performs HMR for editing a worker without touching the page', () => {
+      cy.contains('Pong from Elm worker to the main thread')
+      cy.task('amendFile', {
+        path: 'example/src/Worker.elm',
+        target: 'Pong from Elm worker',
+        replacement: 'Pong from updated Elm worker',
+      })
+      cy.contains('Pong from updated Elm worker to the main thread')
+      cy.window()
+        .then((w) => w.performance.navigation.type)
+        .should('eq', window.performance.navigation.TYPE_NAVIGATE)
+      cy.contains('h1', 'Platform.worker sample')
+      cy.contains('Browser.element bundled with Platform.worker')
+    })
+
+    it('performs HMR for editing an element bundled with a worker', () => {
+      cy.contains('Browser.element bundled with Platform.worker')
+      cy.task('amendFile', {
+        path: 'example/src/WorkerCompanion.elm',
+        target: 'bundled with',
+        replacement: 'combined with',
+      })
+      cy.contains('Browser.element combined with Platform.worker')
+      cy.window()
+        .then((w) => w.performance.navigation.type)
+        .should('eq', window.performance.navigation.TYPE_NAVIGATE)
+      cy.contains('h1', 'Platform.worker sample')
+      cy.contains('Pong from Elm worker to the main thread')
+    })
+  })
+})
+
 describe('raw loading', () => {
   before(() => {
     cy.visit(onDevelopmentBuild('/raw.html'))
