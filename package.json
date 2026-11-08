@@ -19,7 +19,7 @@
     "build:example:eol2": "cd ./example && npm run build:eol2",
     "test": "vitest",
     "test:ci": "vitest run",
-    "test-server:dev": "cd ./example && npm run dev -- --port 8936",
+    "test-server:dev": "PATH=\"$PWD/example/node_modules/.bin:$PATH\" vite example --port 8936",
     "test-server:preview": "cd ./example && npm run preview -- --port 8938",
     "cypress:prepare": "run-p test-server:*",
     "cypress:open": "cypress open",

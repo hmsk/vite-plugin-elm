@@ -96,7 +96,7 @@ describe('Browser.application', () => {
       cy.get('[alt="with inline option"]')
         .should('be.visible')
         .and(($img) => {
-          expect($img.attr('src')).to.be.eq('/assets/logo.png?inline')
+          expect($img.attr('src')).to.match(/^data:image\/png;base64,/)
         })
     })
 
@@ -104,7 +104,7 @@ describe('Browser.application', () => {
       cy.get('[alt="with vite-plugin-helper"]')
         .should('be.visible')
         .and(($img) => {
-          expect($img.attr('src')).to.be.eq('/assets/logo.png?inline')
+          expect($img.attr('src')).to.match(/^data:image\/png;base64,/)
         })
     })
   })
