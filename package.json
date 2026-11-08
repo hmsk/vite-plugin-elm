@@ -11,7 +11,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "tsc -w -p .",
-    "build": "rm -rf dist && tsc -p .",
+    "build": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p .",
     "lint": "eslint . --max-warnings 0",
     "prettier": "prettier --check .",
     "prepare": "npm run build",
