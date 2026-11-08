@@ -30,7 +30,7 @@ it('executes manual command', async () => {
 })
 
 it('executes manual command which fails', async () => {
-  expect(
+  await expect(
     compile(['a', 'b', 'c'], {
       compile: async () => Promise.reject('sad'),
     }),

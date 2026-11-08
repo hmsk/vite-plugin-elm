@@ -5,13 +5,17 @@ updates:
     schedule:
       interval: 'weekly'
     ignore:
+      # Held at the majors the 3.x line supports (Vite 5, Node 18+).
+      # Vitest 4+ requires Vite 6+.
+      - dependency-name: 'vite'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'vitest'
+        update-types: ['version-update:semver-major']
       - dependency-name: '@types/node'
-        versions:
-          - 20.x
-          - 22.x
-      - dependency-name: 'eslint'
-        versions:
-          - 9.x
+        update-types: ['version-update:semver-major']
+      # typescript-eslint doesn't support TypeScript 7 yet
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
     groups:
       acorn:
         patterns:
@@ -19,6 +23,12 @@ updates:
       eslint-family:
         patterns:
           - 'eslint'
+          - '@eslint/*'
           - 'typescript-eslint'
           - 'eslint-config-prettier'
           - 'prettier'
+
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'

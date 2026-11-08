@@ -6,6 +6,7 @@
     "declaration": true,
     "noUnusedLocals": true,
     "esModuleInterop": true,
+    "rootDir": "src",
     "outDir": "dist",
     "module": "Node16",
     "lib": ["ES2022", "DOM"],
