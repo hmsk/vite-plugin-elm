@@ -6,42 +6,71 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x]
-
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v7
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 24.x
+          cache: npm
 
-      - name: Build typescript project
-        run: |
-          npm install
-          npm run build
+      - run: npm ci
+        env:
+          CYPRESS_INSTALL_BINARY: 0
 
       - name: Run ESLint and Prettier
         run: |
           npm run lint
           npm run prettier
 
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x, 24.x]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      # `npm ci` builds the package through the `prepare` script
+      - run: npm ci
+        env:
+          CYPRESS_INSTALL_BINARY: 0
+
       - name: Run unit tests
-        run: |
-          npm run test:ci
+        run: npm run test:ci
+
+  e2e:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+          cache: npm
 
       - name: Run integration tests
-        uses: cypress-io/github-action@v4
+        uses: cypress-io/github-action@v7
         with:
           build: npm run build:example
           start: npm run cypress:prepare
+          wait-on: 'http://localhost:8936, http://localhost:8938'
 
       - name: Make sure we can compile with eol2 via command line
-        run: |
-          npm run build:example:eol2
+        run: npm run build:example:eol2
