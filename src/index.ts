@@ -26,10 +26,21 @@ const parseImportId = (id: string) => {
 export const plugin = (userOptions: Parameters<typeof parseOptions>[0] = {}): Plugin => {
   const options = parseOptions(userOptions)
   const compilableFiles: Map<string, Set<string>> = new Map()
+  // Importer of each `?with=` import, which accompanying paths are relative to
+  const importersOfCombined: Map<string, string> = new Map()
 
   return {
     name: 'vite-plugin-elm',
     enforce: 'pre',
+    async resolveId(source, importer, options) {
+      if (!importer || !source.includes('.elm')) return null
+      const { valid, withParams } = parseImportId(source)
+      if (!valid || withParams.length === 0) return null
+
+      const resolved = await this.resolve(source, importer, { ...options, skipSelf: true })
+      if (resolved) importersOfCombined.set(resolved.id, importer)
+      return resolved
+    },
     handleHotUpdate({ file, server, modules }) {
       const { valid } = parseImportId(file)
       if (!valid) return
@@ -57,22 +68,16 @@ export const plugin = (userOptions: Parameters<typeof parseOptions>[0] = {}): Pl
       const { valid, pathname, withParams } = parseImportId(id)
       if (!valid) return
 
-      const accompanies = await (() => {
-        if (withParams.length > 0) {
-          const importTree = this.getModuleIds()
-          let importer = ''
-          for (const moduleId of importTree) {
-            if (moduleId === id) break
-            importer = moduleId
-          }
-          const resolveAccompany = async (accompany: string) => (await this.resolve(accompany, importer))?.id ?? ''
-          return Promise.all(withParams.map(resolveAccompany))
-        } else {
-          return Promise.resolve([])
-        }
-      })()
+      const accompanies = await Promise.all(
+        withParams.map(async (accompany) => {
+          // Without a known importer (e.g. requested directly), resolve from the main file
+          const resolved = await this.resolve(accompany, importersOfCombined.get(id) ?? pathname)
+          if (!resolved) throw new Error(`Could not resolve "${accompany}" given via ?with= in ${id}`)
+          return resolved.id
+        }),
+      )
 
-      const targets = [pathname, ...accompanies].filter((target) => target !== '')
+      const targets = [pathname, ...accompanies]
 
       compilableFiles.delete(id)
       const dependencies = (

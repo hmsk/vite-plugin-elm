@@ -54,7 +54,7 @@ export const injectAssets = (compiledESM: string) => {
     end: number
   }[] = []
 
-  const ast = parse(compiledESM, { ecmaVersion: 2015, sourceType: 'module' })
+  const ast = parse(compiledESM, { ecmaVersion: 'latest', sourceType: 'module' })
   let helperFunctionName: string
   walk<Node[]>(
     ast,

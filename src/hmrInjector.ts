@@ -43,10 +43,12 @@ if (import.meta.hot) {
   let initializingInstance = null
   let swappingInstance = null
 
-  import.meta.hot.accept()
-  import.meta.hot.accept([
-    "${dependencies.join('", "')}"
-  ], () => { console.log("[vite-plugin-elm] Dependency is updated") })
+  import.meta.hot.accept()${
+    dependencies.length > 0
+      ? `
+  import.meta.hot.accept(${JSON.stringify(dependencies)}, () => { console.log("[vite-plugin-elm] Dependency is updated") })`
+      : ''
+  }
 
   import.meta.hot.on('hot-update-dependents', (data) => {
     console.log("[vite-plugin-elm] Request to hot update dependents: " + data.join(", "))
@@ -89,7 +91,8 @@ if (import.meta.hot) {
     const instance = {
       id, path, domNode, flags, portSubscribes, portSends,
       lastState: null,
-      initialState: null
+      initialState: null,
+      isWorker: false
     }
     return instances[id] = instance
   }
@@ -116,13 +119,15 @@ if (import.meta.hot) {
         let domNode = null
         let flags = undefined
         if (typeof args !== 'undefined') {
-          domNode = args['node'] && !isFullscreenApp() ? wrapDomNode(args['node']) : document.body
+          if (args['node'] && !isFullscreenApp()) domNode = wrapDomNode(args['node'])
           flags = args['flags']
-        } else {
-          domNode = document.body
         }
+        // There is no document in a Web Worker
+        if (domNode === null && typeof document !== 'undefined') domNode = document.body
         initializingInstance = registerInstance(domNode, flags, path, portSubscribes, portSends)
         elm = originalInit(args)
+        // Platform.worker owns no DOM, so leave the page as it is on swapping
+        if (initializingInstance.isWorker) initializingInstance.domNode = null
         wrapPorts(elm, portSubscribes, portSends)
         initializingInstance = null
         return elm
@@ -137,15 +142,15 @@ if (import.meta.hot) {
     swappingInstance = instance
 
     const containerNode = instance.domNode
-    while (containerNode.lastChild) {
+    while (containerNode && containerNode.lastChild) {
       containerNode.removeChild(containerNode.lastChild)
     }
 
     const m = getAt(instance.path.split('.'), Elm)
     if (m) {
       const args = { flags: instance.flags }
-      if (containerNode === document.body) {
-        // fullscreen
+      if (!containerNode || containerNode === document.body) {
+        // worker or fullscreen
       } else {
         const nodeForEmbed = document.createElement("div")
         containerNode.appendChild(nodeForEmbed)
@@ -261,6 +266,9 @@ if (import.meta.hot) {
   const initialize = _Platform_initialize
   _Platform_initialize = (flagDecoder, args, init, update, subscriptions, stepperBuilder) => {
     const instance = initializingInstance || swappingInstance
+    // _Platform_worker passes \`function() { return function() {} }\` while every
+    // Browser program passes \`function(sendToApp, initialModel)\`
+    if (instance) instance.isWorker = stepperBuilder.length === 0
     let tryFirstRender = !!swappingInstance
 
     const hookedInit = (args) => {
@@ -344,7 +352,7 @@ if (import.meta.hot) {
   const swapInstances = (Elm) => {
     const removedInstances = []
     Object.entries(instances).forEach(([id, instance]) => {
-      if (instance.domNode.parentNode) {
+      if (instance.domNode === null || instance.domNode.parentNode) {
         swap(Elm, instance)
       } else {
         removedInstances.push(id)
@@ -352,7 +360,7 @@ if (import.meta.hot) {
     })
 
     removedInstances.forEach((id) => {
-      delete instance[id]
+      delete instances[id]
     })
 
     findPublicModules(Elm).forEach((m) => {

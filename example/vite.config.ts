@@ -16,10 +16,16 @@ const compileWithEOL2 = async (targets: string[]) => {
   return fs.readFileSync(output).toString()
 }
 
+const elmPlugin = () => plugin(
+  process.env.NODE_ENV === 'production' && !!process.env.CUSTOM_COMPILER ? { compiler: { compile: compileWithEOL2 } } : {}
+)
+
 export default defineConfig({
-  plugins: [plugin(
-    process.env.NODE_ENV === 'production' && !!process.env.CUSTOM_COMPILER ? { compiler: { compile: compileWithEOL2 } } : {}
-  )],
+  plugins: [elmPlugin()],
+  worker: {
+    format: 'es',
+    plugins: () => [elmPlugin()],
+  },
   build: {
     rollupOptions: {
       input: {
@@ -27,6 +33,7 @@ export default defineConfig({
         application: resolve(__dirname, 'application.html'),
         elements: resolve(__dirname, 'elements.html'),
         raw: resolve(__dirname, 'raw.html'),
+        worker: resolve(__dirname, 'worker.html'),
       },
     },
   },
