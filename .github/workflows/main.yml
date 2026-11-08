@@ -31,12 +31,19 @@ jobs:
           npm run prettier
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
+      fail-fast: false
       matrix:
+        os: [ubuntu-latest]
         # Supported release lines: https://github.com/nodejs/Release#release-schedule
         node-version: [22.x, 24.x, 26.x]
+        include:
+          - os: windows-latest
+            node-version: 24.x
+          - os: macos-latest
+            node-version: 24.x
 
     steps:
       - uses: actions/checkout@v7
