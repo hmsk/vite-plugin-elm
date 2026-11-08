@@ -18,7 +18,7 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 24.x
+          node-version-file: .tool-versions
           cache: npm
 
       - run: npm ci
@@ -35,7 +35,8 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x, 22.x, 24.x]
+        # Supported release lines: https://github.com/nodejs/Release#release-schedule
+        node-version: [22.x, 24.x, 26.x]
 
     steps:
       - uses: actions/checkout@v7
@@ -62,7 +63,7 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 24.x
+          node-version-file: .tool-versions
           cache: npm
 
       - name: Run integration tests
