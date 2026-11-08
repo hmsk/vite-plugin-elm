@@ -5,10 +5,8 @@ updates:
     schedule:
       interval: 'weekly'
     ignore:
-      # Held at the majors the 3.x line supports (Vite 5, Node 18+).
-      # Vitest 4+ requires Vite 6+.
-      - dependency-name: 'vite'
-        update-types: ['version-update:semver-major']
+      # Held at the oldest Node the plugin supports (^20.19.0 || >=22.12.0).
+      # Vitest 5+ requires Node 22.12+.
       - dependency-name: 'vitest'
         update-types: ['version-update:semver-major']
       - dependency-name: '@types/node'

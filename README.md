@@ -45,7 +45,12 @@ You can explore the [`/example`](/example) directory to experiment with an actua
 
 ### Supported Vite versions
 
-v3 is developed and tested with Vite 5. It also works with Vite 6, 7 and 8 in our tests, except that assets imported with `?inline` aren't inlined on the dev server (production builds are fine). Full support for Vite 6+ is planned for v4.
+| vite-plugin-elm | Vite         | Node.js                       |
+| --------------- | ------------ | ----------------------------- |
+| v4              | 6, 7 and 8   | `^20.19.0 \|\| >=22.12.0`     |
+| v3              | 5 (6–8 work) | Same as the Vite version used |
+
+For Vite 5, install v3: `npm i -D vite-plugin-elm@3`.
 
 ## Options
 
