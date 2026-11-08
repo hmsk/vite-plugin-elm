@@ -79,5 +79,8 @@
   },
   "peerDependencies": {
     "vite": ">= 5.0.0"
+  },
+  "allowScripts": {
+    "cypress": true
   }
 }
