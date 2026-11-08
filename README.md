@@ -43,6 +43,10 @@ Elm.Hello.init({
 
 You can explore the [`/example`](/example) directory to experiment with an actual Vite project. Additionally, [this functional website](https://github.com/hmsk/hmsk.me) can serve as a helpful resource to learn how to use it effectively.
 
+### Supported Vite versions
+
+v3 is developed and tested with Vite 5. It also works with Vite 6, 7 and 8 in our tests, except that assets imported with `?inline` aren't inlined on the dev server (production builds are fine). Full support for Vite 6+ is planned for v4.
+
 ## Options
 
 ### `debug` (Default: `process.env.NODE_ENV !== 'production'`)
@@ -66,6 +70,38 @@ elmPlugin({ debug: false, optimize: false })
 ```
 
 When set to `true`, it optimizes the build and prohibits the usage of Debug Elm functions. If you specify the optimize attribute, you must indicate whether debugging is needed. This is because you might want to have debug traces for the purpose of observing all actions, not necessarily for debugging specific issues.
+
+### `nodeElmCompilerOptions`
+
+Options passed through to [node-elm-compiler](https://github.com/rtfeldman/node-elm-compiler), which take precedence over `debug` and `optimize`. For example, to use a specific `elm` binary:
+
+```ts
+elmPlugin({ nodeElmCompilerOptions: { pathToElm: './bin/elm' } })
+```
+
+### `compiler`
+
+You can replace the compilation with your own function, for example to use [elm-optimize-level-2](https://github.com/mdgriffith/elm-optimize-level-2). `compile` receives the paths of the main `.elm` files and returns the compiled JavaScript as the Elm compiler outputs it (not as an ES module).
+
+```ts
+import fs from 'node:fs'
+import { run as runEOL2 } from 'elm-optimize-level-2'
+import { temporaryFile } from 'tempy'
+
+elmPlugin({
+  compiler: {
+    compile: async (targets: string[]) => {
+      const output = temporaryFile({ extension: 'js' })
+      await runEOL2({ inputFilePath: targets, outputFilePath: output, optimizeSpeed: true })
+      return fs.readFileSync(output).toString()
+    },
+  },
+})
+```
+
+When `compiler` is given, `debug`, `optimize` and `nodeElmCompilerOptions` are ignored. It's also used by the dev server, so you may want to set it only for production builds like [`/example/vite.config.ts`](/example/vite.config.ts) does.
+
+Note that [static assets handling](#static-assets-handling) and [combining multiple main files](#combine-multiple-main-files-experimental) rely on the output of the Elm compiler, so they may not work with a compiler that transforms it. They don't work with elm-optimize-level-2.
 
 ## Static Assets Handling
 
@@ -109,6 +145,20 @@ For 3+ main files:
 
 ```ts
 import { Elm } from './App.elm?with=./Another.elm&with=./YetAnother.elm'
+```
+
+## Web Workers
+
+[`Platform.worker`](https://package.elm-lang.org/packages/elm/core/latest/Platform#worker) programs work both on the main thread and in [Web Workers](https://vitejs.dev/guide/features.html#web-workers). Vite builds Web Workers with their own list of plugins, so add the plugin to `worker.plugins` as well:
+
+```ts
+export default defineConfig({
+  plugins: [elmPlugin()],
+  worker: {
+    format: 'es',
+    plugins: () => [elmPlugin()],
+  },
+})
 ```
 
 ## Acknowledgement
