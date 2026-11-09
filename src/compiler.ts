@@ -4,6 +4,7 @@ import { injectAssets } from './assetsInjector.js'
 import { elmMake, type ElmMakeOptions } from './elmMake.js'
 import { toESModule } from './esm.js'
 import { isFile } from './files.js'
+import { annotatePure } from './pure.js'
 
 export type ElmCompilerOptions = Omit<ElmMakeOptions, 'cwd'>
 
@@ -38,7 +39,7 @@ export const compile = async (targets: string[], options: ElmCompilerOptions | C
           // Without elm.json, let Elm tell what's missing
           cwd: findClosestElmJson(targets[0]) ?? path.dirname(path.resolve(targets[0])),
         })
-  return injectAssets(toESModule(compiled))
+  return injectAssets(annotatePure(toESModule(compiled)))
 }
 
 const runCustomCompiler = async (targets: string[], compile: CustomCompiler['compile']) => {
