@@ -25,10 +25,8 @@ jobs:
         env:
           CYPRESS_INSTALL_BINARY: 0
 
-      - name: Run ESLint and Prettier
-        run: |
-          npm run lint
-          npm run prettier
+      - name: Run oxlint and oxfmt
+        run: npm run lint
 
   test:
     runs-on: ${{ matrix.os }}

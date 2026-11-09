@@ -11,20 +11,17 @@ updates:
         update-types: ['version-update:semver-major']
       - dependency-name: '@types/node'
         update-types: ['version-update:semver-major']
-      # typescript-eslint doesn't support TypeScript 7 yet
+      # Moving to TypeScript 7 is a change of its own
       - dependency-name: 'typescript'
         update-types: ['version-update:semver-major']
     groups:
       acorn:
         patterns:
           - 'acorn*'
-      eslint-family:
+      oxc:
         patterns:
-          - 'eslint'
-          - '@eslint/*'
-          - 'typescript-eslint'
-          - 'eslint-config-prettier'
-          - 'prettier'
+          - 'oxlint'
+          - 'oxfmt'
 
   - package-ecosystem: 'github-actions'
     directory: '/'
