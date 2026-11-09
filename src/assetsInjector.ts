@@ -1,9 +1,10 @@
-import type { Node } from 'acorn'
+import type { Literal, Node } from 'acorn'
 import { parse } from 'acorn'
 import { fullAncestor as walk } from 'acorn-walk'
 import crypto from 'crypto'
 
-const ASSET_TAG = /'\[VITE_PLUGIN_ELM_ASSET:(?<path>.+?)\]'/g
+// Matched against string values, not the source, as tools like elm-optimize-level-2 rewrite quotes
+const ASSET_TAG = /^\[VITE_PLUGIN_ELM_ASSET:(?<path>.+)\]$/
 const HELPER_PACKAGE_IDENTIFIER = 'VITE_PLUGIN_HELPER_ASSET'
 
 const importNameFrom = (path: string) => {
@@ -14,11 +15,9 @@ const generateImports = (paths: string[]) => {
   return paths.map((path) => `import ${importNameFrom(path)} from '${path}'`).join('\n')
 }
 
-interface NodeLiteral extends Node {
-  raw: string
-  value: string
-}
-const isLiteral = (node: Node): node is NodeLiteral => node.type === 'Literal'
+const isLiteral = (node: Node): node is Literal => node.type === 'Literal'
+const isStringLiteral = (node: Node): node is Literal & { value: string } =>
+  isLiteral(node) && typeof node.value === 'string'
 
 interface NodeDeclarator extends Node {
   raw: string
@@ -30,7 +29,7 @@ interface NodeDeclarator extends Node {
       body?: {
         argument?: {
           left?: {
-            raw?: string
+            value?: unknown
           }
         }
       }[]
@@ -43,7 +42,7 @@ interface NodeCallExpression extends Node {
   callee?: {
     name?: string
   }
-  arguments?: (NodeLiteral | Node)[]
+  arguments?: Node[]
 }
 const isCallExpression = (node: Node): node is NodeCallExpression => node.type === 'CallExpression'
 
@@ -61,11 +60,11 @@ export const injectAssets = (compiledESM: string) => {
     (node, state) => {
       if (isLiteral(node)) {
         // Find callers of VitePluginHelper.asset
-        if (!helperFunctionName && node.raw === `'${HELPER_PACKAGE_IDENTIFIER}'`) {
+        if (!helperFunctionName && node.value === HELPER_PACKAGE_IDENTIFIER) {
           const helperFunc = state?.find(
             (nodeOnState): nodeOnState is NodeDeclarator =>
               isDeclarator(nodeOnState) &&
-              nodeOnState?.init?.body?.body?.[0]?.argument?.left?.raw === `'${HELPER_PACKAGE_IDENTIFIER}'`,
+              nodeOnState?.init?.body?.body?.[0]?.argument?.left?.value === HELPER_PACKAGE_IDENTIFIER,
           )
           if (helperFunc?.id?.name) {
             helperFunctionName = helperFunc.id.name
@@ -73,7 +72,7 @@ export const injectAssets = (compiledESM: string) => {
               ast,
               (node) => {
                 if (isCallExpression(node) && node?.callee?.name === helperFunctionName) {
-                  if (node?.arguments?.length === 1 && isLiteral(node.arguments[0])) {
+                  if (node?.arguments?.length === 1 && isStringLiteral(node.arguments[0])) {
                     const matchedPath = node.arguments[0].value
                     taggedPaths.push({
                       path: matchedPath,
@@ -98,7 +97,7 @@ export const injectAssets = (compiledESM: string) => {
         }
 
         // Find plain asset tags
-        const matched = ASSET_TAG.exec(node.raw)
+        const matched = typeof node.value === 'string' ? ASSET_TAG.exec(node.value) : null
         if (matched !== null) {
           if (matched.groups?.path) {
             taggedPaths.push({
