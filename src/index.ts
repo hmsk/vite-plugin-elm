@@ -1,5 +1,5 @@
-import { normalize, relative } from 'path'
-import type { EnvironmentModuleNode, Plugin } from 'vite'
+import { normalize, relative, resolve } from 'path'
+import { isFileLoadingAllowed, normalizePath, type EnvironmentModuleNode, type Plugin, type ResolvedConfig } from 'vite'
 import { compile, findClosestElmJson } from './compiler.js'
 import { findLocalDependencies } from './dependencies.js'
 import { ElmCompileError } from './elmMake.js'
@@ -33,10 +33,14 @@ export const plugin = (userOptions: InputOptions = {}): Plugin => {
   const compilableFiles: Map<string, Set<string>> = new Map()
   // Importer of each `?with=` import, which accompanying paths are relative to
   const importersOfCombined: Map<string, string> = new Map()
+  let config: ResolvedConfig | undefined
 
   return {
     name: 'vite-plugin-elm',
     enforce: 'pre',
+    configResolved(resolvedConfig) {
+      config = resolvedConfig
+    },
     async resolveId(source, importer, options) {
       if (!importer || !source.includes('.elm')) return null
       const { valid, withParams } = parseImportId(source)
@@ -86,6 +90,16 @@ export const plugin = (userOptions: InputOptions = {}): Plugin => {
       )
 
       const targets = [pathname, ...accompanies]
+      // The dev server responds with what this compiles, so keep to the files Vite may serve
+      if (config?.command === 'serve') {
+        const servingConfig = config
+        const denied = targets.find((target) => !isFileLoadingAllowed(servingConfig, normalizePath(resolve(target))))
+        if (denied) {
+          throw new Error(
+            `${denied} is outside of Vite's serving allow list. Add its directory to server.fs.allow to compile it: https://vite.dev/config/server-options#server-fs-allow`,
+          )
+        }
+      }
 
       compilableFiles.delete(id)
       const dependencies = [

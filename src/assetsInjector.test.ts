@@ -6,7 +6,7 @@ describe('injectAssets', () => {
   it('replaces an asset tag with an import', () => {
     const injected = injectAssets(`var logo = '[VITE_PLUGIN_ELM_ASSET:/assets/logo.jpg]';`)
 
-    expect(injected).toMatch(/^import _[0-9a-f]{40} from '\/assets\/logo.jpg'/)
+    expect(injected).toMatch(/^import _[0-9a-f]{40} from "\/assets\/logo.jpg"/)
     expect(injected).toMatch(/var logo = _[0-9a-f]{40};/)
   })
 
@@ -18,7 +18,7 @@ describe('injectAssets', () => {
     const injected = injectAssets(`${helper}
 var logo = $hmsk$elm_vite_plugin_helper$VitePluginHelper$asset('/assets/logo.png?inline');`)
 
-    expect(injected).toMatch(/^import _[0-9a-f]{40} from '\/assets\/logo.png\?inline'/)
+    expect(injected).toMatch(/^import _[0-9a-f]{40} from "\/assets\/logo.png\?inline"/)
     expect(injected).toMatch(/var logo = _[0-9a-f]{40};/)
   })
 
@@ -30,8 +30,8 @@ var logo = $hmsk$elm_vite_plugin_helper$VitePluginHelper$asset('/assets/logo.png
 var logo = "[VITE_PLUGIN_ELM_ASSET:/assets/logo.jpg]";
 var inline = $hmsk$elm_vite_plugin_helper$VitePluginHelper$asset("/assets/logo.png?inline");`)
 
-    expect(injected).toMatch(/^import _[0-9a-f]{40} from '\/assets\/logo.jpg'$/m)
-    expect(injected).toMatch(/^import _[0-9a-f]{40} from '\/assets\/logo.png\?inline'$/m)
+    expect(injected).toMatch(/^import _[0-9a-f]{40} from "\/assets\/logo.jpg"$/m)
+    expect(injected).toMatch(/^import _[0-9a-f]{40} from "\/assets\/logo.png\?inline"$/m)
     expect(injected).toMatch(/var logo = _[0-9a-f]{40};\nvar inline = _[0-9a-f]{40};$/)
   })
 
@@ -41,9 +41,19 @@ var inline = $hmsk$elm_vite_plugin_helper$VitePluginHelper$asset("/assets/logo.p
     )
 
     expect(injected).toMatch(
-      /^import _[0-9a-f]{40} from '\/assets\/a.png'\nimport _[0-9a-f]{40} from '\/assets\/longer-name.png'/,
+      /^import _[0-9a-f]{40} from "\/assets\/a.png"\nimport _[0-9a-f]{40} from "\/assets\/longer-name.png"/,
     )
     expect(injected).toMatch(/var a = \[_[0-9a-f]{40}, _[0-9a-f]{40}\];$/)
+  })
+
+  it('keeps a path with quotes in the string of the import', () => {
+    const injected = injectAssets(
+      `var x = "[VITE_PLUGIN_ELM_ASSET:./a.png'; globalThis.injected = 1; import b from './b.png]";`,
+    )
+
+    expect(injected.split('\n')[0]).toMatch(
+      /^import _[0-9a-f]{40} from "\.\/a\.png'; globalThis\.injected = 1; import b from '\.\/b\.png"$/,
+    )
   })
 
   // https://github.com/hmsk/vite-plugin-elm/issues/455

@@ -12,7 +12,8 @@ const importNameFrom = (path: string) => {
 }
 
 const generateImports = (paths: string[]) => {
-  return paths.map((path) => `import ${importNameFrom(path)} from '${path}'`).join('\n')
+  // A path comes from a string in Elm code, possibly in a package, so it must stay a string
+  return paths.map((path) => `import ${importNameFrom(path)} from ${JSON.stringify(path)}`).join('\n')
 }
 
 const isLiteral = (node: Node): node is Literal => node.type === 'Literal'
