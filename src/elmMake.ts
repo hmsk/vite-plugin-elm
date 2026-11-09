@@ -125,9 +125,19 @@ export const elmMake = async (targets: string[], options: ElmMakeOptions): Promi
   }
 }
 
+// cmd.exe exits with this when it can't find the command, which tinyexec runs through on Windows
+const WINDOWS_COMMAND_NOT_FOUND = 9009
+
+const commandNotFound = (command: string, cause: unknown) =>
+  new Error(
+    `Could not run \`${command}\`. Install elm in your project (npm i -D elm), or point the pathToElm option at an elm binary.`,
+    { cause },
+  )
+
 const run = async (command: string, args: string[], cwd: string) => {
+  let result: Awaited<ReturnType<typeof x>>
   try {
-    return await x(command, args, {
+    result = await x(command, args, {
       throwOnError: false,
       nodeOptions: {
         cwd,
@@ -136,12 +146,11 @@ const run = async (command: string, args: string[], cwd: string) => {
       },
     })
   } catch (e) {
-    if (e instanceof Error && 'code' in e && e.code === 'ENOENT') {
-      throw new Error(
-        `Could not run \`${command}\`. Install elm in your project (npm i -D elm), or point the pathToElm option at an elm binary.`,
-        { cause: e },
-      )
-    }
+    if (e instanceof Error && 'code' in e && e.code === 'ENOENT') throw commandNotFound(command, e)
     throw e
   }
+  if (process.platform === 'win32' && result.exitCode === WINDOWS_COMMAND_NOT_FOUND) {
+    throw commandNotFound(command, result.stderr)
+  }
+  return result
 }
