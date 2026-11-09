@@ -1,17 +1,15 @@
-import { statSync } from 'fs'
 import path from 'path'
 
 import { injectAssets } from './assetsInjector.js'
 import { elmMake, type ElmMakeOptions } from './elmMake.js'
 import { toESModule } from './esm.js'
+import { isFile } from './files.js'
 
 export type ElmCompilerOptions = Omit<ElmMakeOptions, 'cwd'>
 
 export interface CustomCompiler {
   compile: (targets: string[]) => Promise<string>
 }
-
-export const isFile = (pathname: string) => statSync(pathname, { throwIfNoEntry: false })?.isFile() ?? false
 
 // Returns the closest directory having elm.json, looking up from the given file until the root
 // (`/`, `C:\` or `\\server\share\`). The path implementation is swappable to test other platforms.

@@ -3,6 +3,8 @@ import { tmpdir } from 'os'
 import path from 'path'
 import { x } from 'tinyexec'
 
+import { isFile } from './files.js'
+
 export interface ElmMakeOptions {
   // Directory having elm.json, where `elm make` runs
   cwd: string
@@ -125,8 +127,23 @@ export const elmMake = async (targets: string[], options: ElmMakeOptions): Promi
   }
 }
 
-// cmd.exe exits with this when it can't find the command, which tinyexec runs through on Windows
-const WINDOWS_COMMAND_NOT_FOUND = 9009
+// On Windows, tinyexec runs a command it can't find through cmd.exe, which fails with a plain exit code
+// instead of ENOENT. So look for it the same way tinyexec does: in cwd, node_modules/.bin of cwd and
+// its ancestors, node's directory, then PATH, with an extension in PATHEXT.
+export const commandExists = (command: string, cwd: string): boolean => {
+  const nodeBins: string[] = []
+  for (let directory = path.resolve(cwd); ; directory = path.dirname(directory)) {
+    nodeBins.push(path.join(directory, 'node_modules', '.bin'))
+    if (path.dirname(directory) === directory) break
+  }
+  const directories = /[\\/]/.test(command)
+    ? ['']
+    : [cwd, ...nodeBins, path.dirname(process.execPath), ...(process.env.PATH ?? '').split(path.delimiter)]
+  const extensions = ['', ...(process.env.PATHEXT ?? '.EXE;.CMD;.BAT;.COM').split(';')]
+  return directories.some((directory) =>
+    extensions.some((extension) => isFile(path.resolve(cwd, directory, command + extension))),
+  )
+}
 
 const commandNotFound = (command: string, cause: unknown) =>
   new Error(
@@ -149,7 +166,7 @@ const run = async (command: string, args: string[], cwd: string) => {
     if (e instanceof Error && 'code' in e && e.code === 'ENOENT') throw commandNotFound(command, e)
     throw e
   }
-  if (process.platform === 'win32' && result.exitCode === WINDOWS_COMMAND_NOT_FOUND) {
+  if (process.platform === 'win32' && result.exitCode !== 0 && !commandExists(command, cwd)) {
     throw commandNotFound(command, result.stderr)
   }
   return result

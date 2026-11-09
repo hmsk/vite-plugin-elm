@@ -1,9 +1,9 @@
-import { chmodSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'fs'
+import { chmodSync, mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import path from 'path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-import { ElmCompileError, elmMake, toCompileError } from './elmMake.js'
+import { commandExists, ElmCompileError, elmMake, toCompileError } from './elmMake.js'
 
 const cwd = path.resolve('/project')
 
@@ -142,5 +142,35 @@ writeFileSync(output, JSON.stringify({ args: args.filter((arg) => arg !== '--out
         pathToElm: 'surely-not-an-elm-binary',
       }),
     ).rejects.toThrow('Could not run `surely-not-an-elm-binary`. Install elm in your project (npm i -D elm)')
+  })
+})
+
+describe('commandExists', () => {
+  it('finds a command in the directory of node, and in PATH', () => {
+    expect(commandExists(path.basename(process.execPath, '.exe'), tmpdir())).toBe(true)
+  })
+
+  it('finds a path relative to cwd', () => {
+    const root = realpathSync(mkdtempSync(path.join(tmpdir(), 'vite-plugin-elm-')))
+    try {
+      writeFileSync(path.join(root, 'elm.cmd'), '')
+      expect(commandExists('./elm.cmd', root)).toBe(true)
+      expect(commandExists('./missing', root)).toBe(false)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('finds a command in node_modules/.bin of an ancestor', () => {
+    const root = realpathSync(mkdtempSync(path.join(tmpdir(), 'vite-plugin-elm-')))
+    try {
+      mkdirSync(path.join(root, 'node_modules', '.bin'), { recursive: true })
+      mkdirSync(path.join(root, 'app', 'src'), { recursive: true })
+      writeFileSync(path.join(root, 'node_modules', '.bin', 'some-elm'), '')
+      expect(commandExists('some-elm', path.join(root, 'app', 'src'))).toBe(true)
+      expect(commandExists('surely-not-an-elm-binary', path.join(root, 'app', 'src'))).toBe(false)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
   })
 })

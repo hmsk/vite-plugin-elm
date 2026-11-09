@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs'
 import path from 'path'
 
-import { isFile } from './compiler.js'
+import { isFile } from './files.js'
 
 const MODULE_NAME = /^\p{Lu}[\p{L}\p{N}_]*(?:\.\p{Lu}[\p{L}\p{N}_]*)*/u
 
