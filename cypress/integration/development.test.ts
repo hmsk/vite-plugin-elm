@@ -120,6 +120,28 @@ describe('Browser.application', () => {
           expect($img.attr('src')).to.match(/^data:image\/png;base64,/)
         })
     })
+
+    describe('when VitePluginHelper.asset is given a non-literal', () => {
+      const file = 'example/src/Application.elm'
+      beforeEach(() => {
+        cy.task('keepOriginal', file)
+      })
+
+      afterEach(() => {
+        cy.task('restoreOriginal', file)
+      })
+
+      it('shows how to call it on the overlay', () => {
+        cy.task('amendFile', {
+          path: file,
+          target: 'asset "/assets/logo.png?inline"',
+          replacement: 'asset ("/assets/" ++ "logo.png?inline")',
+        })
+        cy.get('vite-error-overlay')
+          .shadow()
+          .should('contain.text', 'VitePluginHelper.asset takes only a string literal')
+      })
+    })
   })
 })
 
