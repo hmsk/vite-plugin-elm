@@ -1,7 +1,7 @@
 //@ts-expect-error typing isn't provided
 import nodeElmcompiler from 'node-elm-compiler'
 import { normalize, relative } from 'path'
-import type { ModuleNode, Plugin } from 'vite'
+import type { EnvironmentModuleNode, Plugin } from 'vite'
 import { injectHMR } from './hmrInjector.js'
 import { acquireLock } from './mutex.js'
 import { parseOptions } from './pluginOptions.js'
@@ -9,6 +9,8 @@ import { compile } from './compiler.js'
 
 const trimDebugMessage = (code: string): string => code.replace(/(console\.warn\('Compiled in DEBUG mode)/, '// $1')
 const viteProjectPath = (dependency: string) => `/${relative(process.cwd(), dependency)}`
+// An id Vite can resolve regardless of `root`/cwd: the absolute file path with forward slashes
+const hmrDependencyId = (dependency: string) => dependency.replace(/\\/g, '/')
 
 const parseImportId = (id: string) => {
   const parsedId = new URL(id, 'file://')
@@ -37,24 +39,27 @@ export const plugin = (userOptions: Parameters<typeof parseOptions>[0] = {}): Pl
       const { valid, withParams } = parseImportId(source)
       if (!valid || withParams.length === 0) return null
 
-      const resolved = await this.resolve(source, importer, { ...options, skipSelf: true })
+      // Spreading `options` reads the deprecated `options.ssr`
+      const { kind, custom, isEntry } = options
+      const resolved = await this.resolve(source, importer, { kind, custom, isEntry, skipSelf: true })
       if (resolved) importersOfCombined.set(resolved.id, importer)
       return resolved
     },
-    handleHotUpdate({ file, server, modules }) {
+    hotUpdate({ type, file, modules }) {
+      if (type !== 'update') return
       const { valid } = parseImportId(file)
       if (!valid) return
 
-      const modulesToCompile: ModuleNode[] = []
+      const modulesToCompile: EnvironmentModuleNode[] = []
       compilableFiles.forEach((dependencies, compilableFile) => {
         if (dependencies.has(normalize(file))) {
-          const module = server.moduleGraph.getModuleById(compilableFile)
+          const module = this.environment.moduleGraph.getModuleById(compilableFile)
           if (module) modulesToCompile.push(module)
         }
       })
 
       if (modulesToCompile.length > 0) {
-        server.ws.send({
+        this.environment.hot.send({
           type: 'custom',
           event: 'hot-update-dependents',
           data: modulesToCompile.map(({ url }) => url),
@@ -95,8 +100,9 @@ export const plugin = (userOptions: Parameters<typeof parseOptions>[0] = {}): Pl
         }
 
         return {
-          code: options.isBuild ? compiled : trimDebugMessage(injectHMR(compiled, dependencies.map(viteProjectPath))),
+          code: options.isBuild ? compiled : trimDebugMessage(injectHMR(compiled, dependencies.map(hmrDependencyId))),
           map: null,
+          moduleType: 'js',
         }
       } catch (e) {
         if (e instanceof Error && e.message.includes('-- NO MAIN')) {

@@ -29,11 +29,11 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
-        application: resolve(__dirname, 'application.html'),
-        elements: resolve(__dirname, 'elements.html'),
-        raw: resolve(__dirname, 'raw.html'),
-        worker: resolve(__dirname, 'worker.html'),
+        main: resolve(import.meta.dirname, 'index.html'),
+        application: resolve(import.meta.dirname, 'application.html'),
+        elements: resolve(import.meta.dirname, 'elements.html'),
+        raw: resolve(import.meta.dirname, 'raw.html'),
+        worker: resolve(import.meta.dirname, 'worker.html'),
       },
     },
   },

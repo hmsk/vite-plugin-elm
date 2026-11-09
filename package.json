@@ -19,7 +19,7 @@
     "build:example:eol2": "cd ./example && npm run build:eol2",
     "test": "vitest",
     "test:ci": "vitest run",
-    "test-server:dev": "cd ./example && npm run dev -- --port 8936",
+    "test-server:dev": "PATH=\"$PWD/example/node_modules/.bin:$PATH\" vite example --port 8936",
     "test-server:preview": "cd ./example && npm run preview -- --port 8938",
     "cypress:prepare": "run-p test-server:*",
     "cypress:open": "cypress open",
@@ -68,7 +68,7 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@types/node": "18.19.130",
+    "@types/node": "20.19.43",
     "cypress": "16.2.1",
     "eslint": "10.14.0",
     "eslint-config-prettier": "10.1.8",
@@ -76,13 +76,16 @@
     "prettier": "3.9.10",
     "typescript": "6.0.3",
     "typescript-eslint": "8.72.1",
-    "vite": "5.4.21",
-    "vitest": "3.2.7"
+    "vite": "8.3.6",
+    "vitest": "4.1.12"
   },
   "peerDependencies": {
-    "vite": "^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0"
+    "vite": "^6.0.0 || ^7.0.0 || ^8.0.0"
   },
   "allowScripts": {
     "cypress": true
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
   }
 }
