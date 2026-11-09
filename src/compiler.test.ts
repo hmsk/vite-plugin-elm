@@ -43,6 +43,33 @@ describe('compile', () => {
       }),
     ).rejects.toThrow('Failed to run the custom compiler: sad')
   })
+
+  it('postprocesses the output of the compiler before making it an ES module', async () => {
+    vi.mocked(elmMake).mockResolvedValue(compiled)
+    const postprocess = vi.fn(async (js: string) => js.replace("'hello'", "'postprocessed'"))
+
+    const result = await compile(['Main.elm'], { debug: false, optimize: true }, postprocess)
+
+    expect(postprocess).toHaveBeenCalledWith(compiled)
+    expect(result).toContain("return 'postprocessed';")
+    expect(result).toMatch(/export const Elm = scope\.Elm;/)
+  })
+
+  it('postprocesses the output of a custom compiler too', async () => {
+    expect(
+      await compile(['Main.elm'], { compile: async () => compiled }, (js) => js.replace("'hello'", "'sync'")),
+    ).toContain("return 'sync';")
+  })
+
+  it('tells when postprocess fails', async () => {
+    vi.mocked(elmMake).mockResolvedValue(compiled)
+
+    await expect(
+      compile(['Main.elm'], { debug: false, optimize: true }, () => {
+        throw new Error('sad')
+      }),
+    ).rejects.toThrow('Failed to run postprocess: sad')
+  })
 })
 
 describe('findClosestElmJson', () => {

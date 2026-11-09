@@ -26,7 +26,7 @@ const parseImportId = (id: string) => {
 }
 
 export type { InputOptions as Options }
-export type { CustomCompiler } from './compiler.js'
+export type { CustomCompiler, Postprocess } from './compiler.js'
 
 export const plugin = (userOptions: InputOptions = {}): Plugin => {
   const options = parseOptions(userOptions)
@@ -95,7 +95,7 @@ export const plugin = (userOptions: InputOptions = {}): Plugin => {
 
       const releaseLock = await acquireLock()
       try {
-        const compiled = await compile(targets, options.compilerOptions)
+        const compiled = await compile(targets, options.compilerOptions, options.postprocess)
 
         // Apparently `addWatchFile` may not exist: https://github.com/hmsk/vite-plugin-elm/pull/36
         if (this.addWatchFile) {
