@@ -12,8 +12,8 @@
   "scripts": {
     "dev": "tsc -w -p .",
     "build": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p .",
-    "lint": "eslint . --max-warnings 0",
-    "prettier": "prettier --check .",
+    "lint": "oxlint --deny-warnings && oxfmt --check",
+    "format": "oxfmt",
     "prepare": "npm run build",
     "build:example": "cd ./example && npm i && npm run build",
     "build:example:eol2": "cd ./example && npm run build:eol2",
@@ -66,15 +66,12 @@
     "tinyexec": "^1.3.1"
   },
   "devDependencies": {
-    "@eslint/js": "10.0.1",
     "@types/node": "20.19.43",
     "cypress": "16.2.1",
-    "eslint": "10.14.0",
-    "eslint-config-prettier": "10.1.8",
     "npm-run-all": "4.1.5",
-    "prettier": "3.9.10",
+    "oxfmt": "0.78.0",
+    "oxlint": "1.93.0",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.72.1",
     "vite": "8.3.6",
     "vitest": "4.1.12"
   },
