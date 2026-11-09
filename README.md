@@ -20,6 +20,8 @@ npm i -D vite-plugin-elm elm
 
 The plugin runs `elm` from the closest `node_modules/.bin`, looking up from the directory having `elm.json`, or from `PATH`. See [`pathToElm`](#pathtoelm) to use another one.
 
+`npm i -D elm` installs the latest Elm. Its version has to match `elm-version` in your `elm.json`, so for a project on Elm 0.19.1, install `elm@0.19.1-6` or update `elm-version`.
+
 In `vite.config.(js|ts)`:
 
 ```ts
@@ -45,12 +47,12 @@ Elm.Hello.init({
 
 You can explore the [`/example`](/example) directory to experiment with an actual Vite project. Additionally, [this functional website](https://github.com/hmsk/hmsk.me) can serve as a helpful resource to learn how to use it effectively.
 
-### Supported Vite versions
+### Supported versions
 
-| vite-plugin-elm | Vite         | Node.js                       |
-| --------------- | ------------ | ----------------------------- |
-| v4              | 6, 7 and 8   | `^20.19.0 \|\| >=22.12.0`     |
-| v3              | 5 (6–8 work) | Same as the Vite version used |
+| vite-plugin-elm | Vite         | Elm              | Node.js                       |
+| --------------- | ------------ | ---------------- | ----------------------------- |
+| v4              | 6, 7 and 8   | 0.19.1 to 0.19.3 | `^20.19.0 \|\| >=22.12.0`     |
+| v3              | 5 (6–8 work) | 0.19.1           | Same as the Vite version used |
 
 For Vite 5, install v3: `npm i -D vite-plugin-elm@3`.
 
