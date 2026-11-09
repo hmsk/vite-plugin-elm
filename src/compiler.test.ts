@@ -2,42 +2,47 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import path from 'path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-//@ts-expect-error typing isn't provided
-import nodeElmCompiler from 'node-elm-compiler'
 
 import { compile, findClosestElmJson } from './compiler.js'
+import { elmMake } from './elmMake.js'
 
-const compiled = `_Platform_export({'Hello':{'init':$author$project$Hello$main($elm$json$Json$Decode$string)({'versions':{'elm':'0.19.1'},'types':{'message':'Hello.Msg','aliases':{},'unions':{'Hello.Msg':{'args':[],'tags':{'Name':['String.String']}},'String.String':{'args':[],'tags':{'String':[]}}}}})}});}(this));`
+vi.mock('./elmMake.js', () => ({ elmMake: vi.fn() }))
 
-it('calls node-elm-compiler', async () => {
-  vi.spyOn(nodeElmCompiler, 'compileToString').mockImplementation(() => compiled)
+const compiled = `(function(scope){
+'use strict';
+function _Platform_export(exports) { scope['Elm'] = exports; }
+_Platform_export({'Hello':{'init':function() { return 'hello'; }}});}(this));`
 
-  expect(await compile(['a', 'b', 'c'], { debug: false, optimize: true, verbose: true })).toMatch(
-    /export const Elm = {'Hello':/,
-  )
+describe('compile', () => {
+  it('runs elm make in the directory having elm.json', async () => {
+    vi.mocked(elmMake).mockResolvedValue(compiled)
+    const root = mkdtempSync(path.join(tmpdir(), 'vite-plugin-elm-'))
+    try {
+      writeFileSync(path.join(root, 'elm.json'), '{}')
+      const main = path.join(root, 'src', 'Main.elm')
 
-  expect(nodeElmCompiler.compileToString).toBeCalledWith(['a', 'b', 'c'], {
-    output: '.js',
-    debug: false,
-    optimize: true,
-    verbose: true,
+      expect(await compile([main], { debug: false, optimize: true })).toMatch(/export const Elm = scope\.Elm;/)
+      expect(elmMake).toHaveBeenCalledWith([main], { debug: false, optimize: true, cwd: root })
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
   })
-})
 
-it('executes manual command', async () => {
-  expect(
-    await compile(['a', 'b', 'c'], {
-      compile: async (targets) => (targets[1] === 'b' ? compiled : ''),
-    }),
-  ).toMatch(/export const Elm = {'Hello':/)
-})
+  it('runs a custom compiler', async () => {
+    expect(
+      await compile(['a', 'b', 'c'], {
+        compile: async (targets) => (targets[1] === 'b' ? compiled : ''),
+      }),
+    ).toMatch(/export const Elm = scope\.Elm;/)
+  })
 
-it('executes manual command which fails', async () => {
-  await expect(
-    compile(['a', 'b', 'c'], {
-      compile: async () => Promise.reject('sad'),
-    }),
-  ).rejects.toMatch(/Failed to run command/)
+  it('tells when a custom compiler fails', async () => {
+    await expect(
+      compile(['a', 'b', 'c'], {
+        compile: async () => Promise.reject(new Error('sad')),
+      }),
+    ).rejects.toThrow('Failed to run the custom compiler: sad')
+  })
 })
 
 describe('findClosestElmJson', () => {

@@ -15,8 +15,10 @@ Elm.MyApplication.init()
 ## Setup
 
 ```
-npm i -D vite-plugin-elm
+npm i -D vite-plugin-elm elm
 ```
+
+The plugin runs `elm` from the closest `node_modules/.bin`, looking up from the directory having `elm.json`, or from `PATH`. See [`pathToElm`](#pathtoelm) to use another one.
 
 In `vite.config.(js|ts)`:
 
@@ -76,12 +78,12 @@ elmPlugin({ debug: false, optimize: false })
 
 When set to `true`, it optimizes the build and prohibits the usage of Debug Elm functions. If you specify the optimize attribute, you must indicate whether debugging is needed. This is because you might want to have debug traces for the purpose of observing all actions, not necessarily for debugging specific issues.
 
-### `nodeElmCompilerOptions`
+### `pathToElm`
 
-Options passed through to [node-elm-compiler](https://github.com/rtfeldman/node-elm-compiler), which take precedence over `debug` and `optimize`. For example, to use a specific `elm` binary:
+The `elm` binary to run, as a path or a command name. It can be another CLI as long as it works like `elm make` including `--report=json`. A relative path is resolved from the directory having `elm.json`.
 
 ```ts
-elmPlugin({ nodeElmCompilerOptions: { pathToElm: './bin/elm' } })
+elmPlugin({ pathToElm: './bin/elm' })
 ```
 
 ### `compiler`
@@ -104,7 +106,7 @@ elmPlugin({
 })
 ```
 
-When `compiler` is given, `debug`, `optimize` and `nodeElmCompilerOptions` are ignored. It's also used by the dev server, so you may want to set it only for production builds like [`/example/vite.config.ts`](/example/vite.config.ts) does.
+When `compiler` is given, `debug`, `optimize` and `pathToElm` are ignored. It's also used by the dev server, so you may want to set it only for production builds like [`/example/vite.config.ts`](/example/vite.config.ts) does.
 
 Note that [static assets handling](#static-assets-handling) and [combining multiple main files](#combine-multiple-main-files-experimental) rely on the output of the Elm compiler, so they may not work with a compiler that transforms it. They don't work with elm-optimize-level-2.
 
@@ -166,10 +168,17 @@ export default defineConfig({
 })
 ```
 
+## Migrating from v3
+
+- Use Vite 6, 7 or 8, and Node.js `^20.19.0 || >=22.12.0`.
+- Install `elm` in your project, or have it in `PATH`. The plugin no longer depends on [node-elm-compiler](https://github.com/rtfeldman/node-elm-compiler) and runs `elm` by itself.
+- `nodeElmCompilerOptions` is removed. Replace `nodeElmCompilerOptions.pathToElm` with [`pathToElm`](#pathtoelm). The other options of node-elm-compiler have no replacement.
+- Compile errors are reported in the format of the Elm CLI, with colors in the terminal, and point at the file and line on Vite's overlay.
+
 ## Acknowledgement
 
 - [klazuka/elm-hot](https://github.com/klazuka/elm-hot) for a helpful referrence of the HMR implementation
-- [ChristophP/elm-esm](https://github.com/ChristophP/elm-esm/issues/2) for publishing IIFE -> ESM logic
+- [ChristophP/elm-esm](https://github.com/ChristophP/elm-esm/issues/2) for publishing IIFE -> ESM logic, which this plugin used until v3
 
 ## License
 

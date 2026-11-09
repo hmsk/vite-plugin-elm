@@ -1,11 +1,11 @@
-//@ts-expect-error typing isn't provided
-import nodeElmcompiler from 'node-elm-compiler'
 import { normalize, relative } from 'path'
 import type { EnvironmentModuleNode, Plugin } from 'vite'
+import { compile, findClosestElmJson } from './compiler.js'
+import { findLocalDependencies } from './dependencies.js'
+import { ElmCompileError } from './elmMake.js'
 import { injectHMR } from './hmrInjector.js'
 import { acquireLock } from './mutex.js'
-import { parseOptions } from './pluginOptions.js'
-import { compile } from './compiler.js'
+import { parseOptions, type InputOptions } from './pluginOptions.js'
 
 const trimDebugMessage = (code: string): string => code.replace(/(console\.warn\('Compiled in DEBUG mode)/, '// $1')
 const viteProjectPath = (dependency: string) => `/${relative(process.cwd(), dependency)}`
@@ -25,7 +25,10 @@ const parseImportId = (id: string) => {
   }
 }
 
-export const plugin = (userOptions: Parameters<typeof parseOptions>[0] = {}): Plugin => {
+export type { InputOptions as Options }
+export type { CustomCompiler } from './compiler.js'
+
+export const plugin = (userOptions: InputOptions = {}): Plugin => {
   const options = parseOptions(userOptions)
   const compilableFiles: Map<string, Set<string>> = new Map()
   // Importer of each `?with=` import, which accompanying paths are relative to
@@ -85,9 +88,9 @@ export const plugin = (userOptions: Parameters<typeof parseOptions>[0] = {}): Pl
       const targets = [pathname, ...accompanies]
 
       compilableFiles.delete(id)
-      const dependencies = (
-        await Promise.all<string[]>(targets.map((target) => nodeElmcompiler.findAllDependencies(target) as string[]))
-      ).flat()
+      const dependencies = [
+        ...new Set(targets.flatMap((target) => findLocalDependencies(target, findClosestElmJson(target)))),
+      ]
       compilableFiles.set(id, new Set([...accompanies, ...dependencies]))
 
       const releaseLock = await acquireLock()
@@ -105,11 +108,11 @@ export const plugin = (userOptions: Parameters<typeof parseOptions>[0] = {}): Pl
           moduleType: 'js',
         }
       } catch (e) {
-        if (e instanceof Error && e.message.includes('-- NO MAIN')) {
-          const message = `${viteProjectPath(
-            pathname,
-          )}: NO MAIN .elm file is requested to transform by vite. Probably, this file is just a depending module`
-          throw message
+        if (e instanceof ElmCompileError && e.title === 'NO MAIN') {
+          throw new Error(
+            `${viteProjectPath(pathname)} has no \`main\` to compile. Probably, it's a module for other Elm modules to import.`,
+            { cause: e },
+          )
         } else {
           throw e
         }

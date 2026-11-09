@@ -71,6 +71,19 @@ describe('Browser.document', () => {
         .should('eq', window.performance.navigation.TYPE_RELOAD)
       cy.contains("I'm clicked").should('not.exist')
     })
+
+    it('shows a compile error from Elm on the overlay', () => {
+      cy.task('amendFile', {
+        path: 'example/src/Hello.elm',
+        target: 'through vite-plugin-elm',
+        replacement: 'through vite-plugin-elm" ++ 1 ++ "',
+      })
+      cy.get('vite-error-overlay')
+        .shadow()
+        .should('contain.text', '-- TYPE MISMATCH')
+        .and('contain.text', 'src/Hello.elm')
+        .and('contain.text', 'The (++) operator can append List and String values')
+    })
   })
 })
 
