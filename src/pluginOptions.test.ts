@@ -1,7 +1,11 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { parseOptions } from './pluginOptions.js'
 
 type Result = ReturnType<typeof parseOptions>
+
+afterEach(() => {
+  vi.unstubAllEnvs()
+})
 
 describe('in dev build', () => {
   it('returns default in dev', () => {
@@ -10,7 +14,6 @@ describe('in dev build', () => {
       compilerOptions: {
         debug: true,
         optimize: false,
-        verbose: false,
       },
     })
   })
@@ -21,31 +24,25 @@ describe('in dev build', () => {
       compilerOptions: {
         debug: false,
         optimize: true,
-        verbose: false,
       },
     })
   })
 
-  it('passes thru options for node-elm-compiler', () => {
-    expect(
-      parseOptions({
-        nodeElmCompilerOptions: { pathToElm: 'wherever' },
-      }),
-    ).toEqual<Result>({
+  it('passes pathToElm through', () => {
+    expect(parseOptions({ pathToElm: 'lamdera' })).toEqual<Result>({
       isBuild: false,
       compilerOptions: {
         debug: true,
         optimize: false,
-        verbose: false,
-        pathToElm: 'wherever',
+        pathToElm: 'lamdera',
       },
     })
   })
 
-  it('accepts manual command which omits options for node-elm-compiler', () => {
+  it('takes a custom compiler over options for elm', () => {
     expect(
       parseOptions({
-        nodeElmCompilerOptions: { pathToElm: 'wherever' },
+        pathToElm: 'wherever',
         compiler: { compile: async () => 'compiled' },
       }),
     ).toEqual<Result>({
@@ -54,6 +51,11 @@ describe('in dev build', () => {
         compile: expect.any(Function),
       },
     })
+  })
+
+  it('tells how to migrate from nodeElmCompilerOptions', () => {
+    // @ts-expect-error removed in v4
+    expect(() => parseOptions({ nodeElmCompilerOptions: { pathToElm: 'elm' } })).toThrow(/Use `pathToElm`/)
   })
 })
 
@@ -68,7 +70,6 @@ describe('in production build', () => {
       compilerOptions: {
         debug: false,
         optimize: true,
-        verbose: true,
       },
     })
   })
@@ -79,7 +80,6 @@ describe('in production build', () => {
       compilerOptions: {
         debug: true,
         optimize: false,
-        verbose: true,
       },
     })
   })
@@ -90,7 +90,6 @@ describe('in production build', () => {
       compilerOptions: {
         debug: true,
         optimize: false,
-        verbose: true,
       },
     })
   })

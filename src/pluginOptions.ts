@@ -1,22 +1,25 @@
-import { CustomCompiler, NodeElmCompilerOptions } from './compiler.js'
+import type { CustomCompiler, ElmCompilerOptions } from './compiler.js'
 
-interface InputOptions {
+export interface InputOptions {
   debug?: boolean
   optimize?: boolean
-  nodeElmCompilerOptions?: Partial<NodeElmCompilerOptions>
+  // Path or command name of elm (or a compatible CLI). By default, `elm` in node_modules/.bin, then in PATH.
+  pathToElm?: string
   compiler?: CustomCompiler
 }
 
-type DeterminedKeys = 'debug' | 'optimize' | 'verbose'
-
 interface ParsedOptions {
   isBuild: boolean
-  compilerOptions:
-    | (Pick<NodeElmCompilerOptions, DeterminedKeys> & Partial<Omit<NodeElmCompilerOptions, DeterminedKeys>>)
-    | CustomCompiler
+  compilerOptions: ElmCompilerOptions | CustomCompiler
 }
 
 export const parseOptions = (inputOptions: InputOptions): ParsedOptions => {
+  if ('nodeElmCompilerOptions' in inputOptions) {
+    throw new Error(
+      '[vite-plugin-elm] `nodeElmCompilerOptions` was removed in v4. Use `pathToElm` instead of `nodeElmCompilerOptions.pathToElm`.',
+    )
+  }
+
   const isBuild = process.env.NODE_ENV === 'production'
 
   return {
@@ -24,8 +27,7 @@ export const parseOptions = (inputOptions: InputOptions): ParsedOptions => {
     compilerOptions: inputOptions.compiler ?? {
       debug: inputOptions.debug ?? !isBuild,
       optimize: typeof inputOptions.optimize === 'boolean' ? inputOptions.optimize : !inputOptions.debug && isBuild,
-      verbose: isBuild,
-      ...(inputOptions.nodeElmCompilerOptions ?? {}),
+      ...(inputOptions.pathToElm ? { pathToElm: inputOptions.pathToElm } : {}),
     },
   }
 }

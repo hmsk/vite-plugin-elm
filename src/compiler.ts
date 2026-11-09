@@ -1,28 +1,17 @@
-//@ts-expect-error typing isn't provided
-import { toESModule } from 'elm-esm'
-//@ts-expect-error typing isn't provided
-import nodeElmCompiler from 'node-elm-compiler'
 import { statSync } from 'fs'
 import path from 'path'
 
 import { injectAssets } from './assetsInjector.js'
+import { elmMake, type ElmMakeOptions } from './elmMake.js'
+import { toESModule } from './esm.js'
 
-export interface NodeElmCompilerOptions {
-  cwd: string
-  docs: string
-  debug: boolean
-  optimize: boolean
-  processOpts: Record<string, string>
-  report: string
-  pathToElm: string
-  verbose: boolean
-}
+export type ElmCompilerOptions = Omit<ElmMakeOptions, 'cwd'>
 
 export interface CustomCompiler {
   compile: (targets: string[]) => Promise<string>
 }
 
-const isFile = (pathname: string) => statSync(pathname, { throwIfNoEntry: false })?.isFile() ?? false
+export const isFile = (pathname: string) => statSync(pathname, { throwIfNoEntry: false })?.isFile() ?? false
 
 // Returns the closest directory having elm.json, looking up from the given file until the root
 // (`/`, `C:\` or `\\server\share\`). The path implementation is swappable to test other platforms.
@@ -42,23 +31,20 @@ export const findClosestElmJson = (
   }
 }
 
-export const compile = async (
-  targets: string[],
-  options: Partial<NodeElmCompilerOptions> | CustomCompiler,
-): Promise<string> => {
+export const compile = async (targets: string[], options: ElmCompilerOptions | CustomCompiler): Promise<string> => {
   const compiled =
     'compile' in options
       ? await runCustomCompiler(targets, options.compile)
-      : await nodeElmCompiler.compileToString(targets, {
-          output: '.js',
-          cwd: findClosestElmJson(targets[0]),
+      : await elmMake(targets, {
           ...options,
+          // Without elm.json, let Elm tell what's missing
+          cwd: findClosestElmJson(targets[0]) ?? path.dirname(path.resolve(targets[0])),
         })
   return injectAssets(toESModule(compiled))
 }
 
 const runCustomCompiler = async (targets: string[], compile: CustomCompiler['compile']) => {
   return compile(targets).catch((e) => {
-    throw `Failed to run command: ${e}`
+    throw new Error(`Failed to run the custom compiler: ${e instanceof Error ? e.message : e}`, { cause: e })
   })
 }
