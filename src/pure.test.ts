@@ -25,7 +25,7 @@ describe('annotatePure', () => {
     const code = [
       'var $author$project$Main$main = A2($elm$browser$Browser$element, {});',
       '\tvar inner = F2(function (a, b) { return a; });',
-      "var _Platform_effectManagers = {}, _Platform_effectsQueue = [];",
+      'var _Platform_effectManagers = {}, _Platform_effectsQueue = [];',
       'var x = F10(f);',
     ].join('\n')
 
