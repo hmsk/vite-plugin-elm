@@ -81,7 +81,12 @@ export const injectAssets = (compiledESM: string) => {
                       end: node.end,
                     })
                   } else {
-                    throw 'Arguments for VitePluginHelper should be just a plain String'
+                    const argument = node.arguments?.map((arg) => compiledESM.slice(arg.start, arg.end)).join(', ')
+                    throw new Error(
+                      'VitePluginHelper.asset takes only a string literal, like `asset "/assets/logo.png"`. ' +
+                        'Vite resolves assets at build time, so the path cannot be built from variables or concatenation. ' +
+                        `Found in the compiled JavaScript: asset(${argument})`,
+                    )
                   }
                 }
               },

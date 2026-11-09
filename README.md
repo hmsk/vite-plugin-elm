@@ -132,6 +132,8 @@ import VitePluginHelper
 Html.img [ Html.Attributes.src <| VitePluginHelper.asset "/assets/logo.png?inline" ] []
 ```
 
+`VitePluginHelper.asset` takes only a string literal as well. Vite resolves assets at build time, so a path built from variables or `++` stops the compilation with an error.
+
 ## Combine multiple main files (Experimental)
 
 By passing importing paths via the `with` URL-ish parameter(s), the plugin compiles multiple main files in a single compilation process. This results in a single Elm export that contains multiple properties, each corresponding to a given main file. This feature helps reduce the bundle size when compared to importing each file separately because common modules and Elm core code are not repeated.

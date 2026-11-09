@@ -10,6 +10,29 @@ describe('injectAssets', () => {
     expect(injected).toMatch(/var logo = _[0-9a-f]{40};/)
   })
 
+  const helper = `var $hmsk$elm_vite_plugin_helper$VitePluginHelper$asset = function (path) {
+	return 'VITE_PLUGIN_HELPER_ASSET' + path;
+};`
+
+  it('replaces a call of VitePluginHelper.asset with an import', () => {
+    const injected = injectAssets(`${helper}
+var logo = $hmsk$elm_vite_plugin_helper$VitePluginHelper$asset('/assets/logo.png?inline');`)
+
+    expect(injected).toMatch(/^import _[0-9a-f]{40} from '\/assets\/logo.png\?inline'/)
+    expect(injected).toMatch(/var logo = _[0-9a-f]{40};/)
+  })
+
+  // https://github.com/hmsk/vite-plugin-elm/issues/455
+  it('throws an Error telling to pass a string literal to VitePluginHelper.asset', () => {
+    const compiled = `${helper}
+var icon = function (name) { return $hmsk$elm_vite_plugin_helper$VitePluginHelper$asset(_Utils_ap('/icons/', name)); };`
+
+    expect(() => injectAssets(compiled)).toThrow(Error)
+    expect(() => injectAssets(compiled)).toThrow(
+      /takes only a string literal.*Found in the compiled JavaScript: asset\(_Utils_ap\('\/icons\/', name\)\)$/,
+    )
+  })
+
   // Elm 0.19.2 emits U+2028/U+2029 as-is in string literals, which is valid only since ES2019
   // https://github.com/elm/compiler/issues/2360
   it('parses line and paragraph separators in string literals', () => {
