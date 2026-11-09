@@ -88,29 +88,34 @@ The `elm` binary to run, as a path or a command name. It can be another CLI as l
 elmPlugin({ pathToElm: './bin/elm' })
 ```
 
-### `compiler`
+### `postprocess`
 
-You can replace the compilation with your own function, for example to use [elm-optimize-level-2](https://github.com/mdgriffith/elm-optimize-level-2). `compile` receives the paths of the main `.elm` files and returns the compiled JavaScript as the Elm compiler outputs it (not as an ES module).
+A function to transform the compiled JavaScript, for example to optimize it further with [elm-optimize-level-2](https://github.com/mdgriffith/elm-optimize-level-2). It receives the output of `elm make` and returns JavaScript of the same shape, before the plugin turns it into an ES module.
 
 ```ts
-import fs from 'node:fs'
-import { run as runEOL2 } from 'elm-optimize-level-2'
-import { temporaryFile } from 'tempy'
+import { transform } from 'elm-optimize-level-2'
 
 elmPlugin({
+  // The second argument enables `--optimize-speed`
+  postprocess: (compiled) => transform(compiled, true),
+})
+```
+
+It runs on the dev server too, so you may want to set it only for production builds like [`/example/vite.config.ts`](/example/vite.config.ts) does. [Static assets handling](#static-assets-handling) and [combining multiple main files](#combine-multiple-main-files-experimental) work with elm-optimize-level-2.
+
+### `compiler`
+
+You can replace `elm make` with your own function. `compile` receives the paths of the main `.elm` files and returns the compiled JavaScript as the Elm compiler outputs it (not as an ES module).
+
+```ts
+elmPlugin({
   compiler: {
-    compile: async (targets: string[]) => {
-      const output = temporaryFile({ extension: 'js' })
-      await runEOL2({ inputFilePath: targets, outputFilePath: output, optimizeSpeed: true })
-      return fs.readFileSync(output).toString()
-    },
+    compile: async (targets: string[]) => compileSomehow(targets),
   },
 })
 ```
 
-When `compiler` is given, `debug`, `optimize` and `pathToElm` are ignored. It's also used by the dev server, so you may want to set it only for production builds like [`/example/vite.config.ts`](/example/vite.config.ts) does.
-
-Note that [static assets handling](#static-assets-handling) and [combining multiple main files](#combine-multiple-main-files-experimental) rely on the output of the Elm compiler, so they may not work with a compiler that transforms it. They don't work with elm-optimize-level-2.
+When `compiler` is given, `debug`, `optimize` and `pathToElm` are ignored, and [`postprocess`](#postprocess) runs on its output. To use elm-optimize-level-2, prefer `postprocess`: its `run` function compiles only the first of the given files, so [combining multiple main files](#combine-multiple-main-files-experimental) doesn't work with it.
 
 ## Static Assets Handling
 
@@ -178,6 +183,7 @@ export default defineConfig({
 - Install `elm` in your project, or have it in `PATH`. The plugin no longer depends on [node-elm-compiler](https://github.com/rtfeldman/node-elm-compiler) and runs `elm` by itself.
 - `nodeElmCompilerOptions` is removed. Replace `nodeElmCompilerOptions.pathToElm` with [`pathToElm`](#pathtoelm). The other options of node-elm-compiler have no replacement.
 - Compile errors are reported in the format of the Elm CLI, with colors in the terminal, and point at the file and line on Vite's overlay.
+- If you use elm-optimize-level-2 through `compiler`, move to [`postprocess`](#postprocess) to keep static assets and combined main files working.
 
 ## Acknowledgement
 

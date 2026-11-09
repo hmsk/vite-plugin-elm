@@ -12,6 +12,9 @@ export interface CustomCompiler {
   compile: (targets: string[]) => Promise<string>
 }
 
+// Takes and returns JavaScript in the shape the Elm compiler outputs
+export type Postprocess = (compiled: string) => string | Promise<string>
+
 // Returns the closest directory having elm.json, looking up from the given file until the root
 // (`/`, `C:\` or `\\server\share\`). The path implementation is swappable to test other platforms.
 export const findClosestElmJson = (
@@ -30,7 +33,11 @@ export const findClosestElmJson = (
   }
 }
 
-export const compile = async (targets: string[], options: ElmCompilerOptions | CustomCompiler): Promise<string> => {
+export const compile = async (
+  targets: string[],
+  options: ElmCompilerOptions | CustomCompiler,
+  postprocess?: Postprocess,
+): Promise<string> => {
   const compiled =
     'compile' in options
       ? await runCustomCompiler(targets, options.compile)
@@ -39,7 +46,16 @@ export const compile = async (targets: string[], options: ElmCompilerOptions | C
           // Without elm.json, let Elm tell what's missing
           cwd: findClosestElmJson(targets[0]) ?? path.dirname(path.resolve(targets[0])),
         })
-  return injectAssets(annotatePure(toESModule(compiled)))
+  const postprocessed = postprocess ? await runPostprocess(compiled, postprocess) : compiled
+  return injectAssets(annotatePure(toESModule(postprocessed)))
+}
+
+const runPostprocess = async (compiled: string, postprocess: Postprocess) => {
+  try {
+    return await postprocess(compiled)
+  } catch (e) {
+    throw new Error(`Failed to run postprocess: ${e instanceof Error ? e.message : e}`, { cause: e })
+  }
 }
 
 const runCustomCompiler = async (targets: string[], compile: CustomCompiler['compile']) => {

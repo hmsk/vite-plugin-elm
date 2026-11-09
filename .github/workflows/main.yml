@@ -104,5 +104,28 @@ jobs:
           start: npm run cypress:prepare
           wait-on: 'http://localhost:8936, http://localhost:8938'
 
-      - name: Make sure we can compile with eol2 via command line
-        run: npm run build:example:eol2
+  e2e-eol2:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .tool-versions
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install the example
+        working-directory: example
+        run: npm ci
+
+      - name: Run production tests on a build with elm-optimize-level-2
+        uses: cypress-io/github-action@v7
+        with:
+          install: false
+          build: npm run build:eol2 --prefix example
+          start: npm run test-server:preview
+          wait-on: 'http://localhost:8938'
+          spec: cypress/integration/production.test.ts

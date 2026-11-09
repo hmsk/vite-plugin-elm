@@ -53,6 +53,15 @@ describe('in dev build', () => {
     })
   })
 
+  it('passes postprocess through', () => {
+    const postprocess = (js: string) => js
+    expect(parseOptions({ postprocess })).toEqual<Result>({
+      isBuild: false,
+      compilerOptions: { debug: true, optimize: false },
+      postprocess,
+    })
+  })
+
   it('tells how to migrate from nodeElmCompilerOptions', () => {
     // @ts-expect-error removed in v4
     expect(() => parseOptions({ nodeElmCompilerOptions: { pathToElm: 'elm' } })).toThrow(/Use `pathToElm`/)

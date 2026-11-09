@@ -1,24 +1,15 @@
-import fs from 'node:fs'
 import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 import plugin from 'vite-plugin-elm'
-import { run as runEOL2 } from 'elm-optimize-level-2'
-import {temporaryFile } from 'tempy';
+import { transform } from 'elm-optimize-level-2'
 
-const compileWithEOL2 = async (targets: string[]) => {
-  const output = temporaryFile({extension: 'elm'});
-  await runEOL2({
-    inputFilePath: targets,
-    outputFilePath: output,
-    optimizeSpeed: true,
-    processOpts: { stdio: ['inherit', 'ignore', 'inherit'] },
-  })
-  return fs.readFileSync(output).toString()
-}
-
-const elmPlugin = () => plugin(
-  process.env.NODE_ENV === 'production' && !!process.env.CUSTOM_COMPILER ? { compiler: { compile: compileWithEOL2 } } : {}
-)
+// `npm run build:eol2` optimizes the compiled code further with elm-optimize-level-2
+const elmPlugin = () =>
+  plugin(
+    process.env.NODE_ENV === 'production' && !!process.env.EOL2
+      ? { postprocess: (compiled) => transform(compiled, true) }
+      : {},
+  )
 
 export default defineConfig({
   plugins: [elmPlugin()],

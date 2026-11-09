@@ -22,6 +22,30 @@ var logo = $hmsk$elm_vite_plugin_helper$VitePluginHelper$asset('/assets/logo.png
     expect(injected).toMatch(/var logo = _[0-9a-f]{40};/)
   })
 
+  // elm-optimize-level-2 prints strings with double quotes
+  it('finds tags and helper calls in double quotes', () => {
+    const injected = injectAssets(`var $hmsk$elm_vite_plugin_helper$VitePluginHelper$asset = function (path) {
+    return "VITE_PLUGIN_HELPER_ASSET" + path;
+};
+var logo = "[VITE_PLUGIN_ELM_ASSET:/assets/logo.jpg]";
+var inline = $hmsk$elm_vite_plugin_helper$VitePluginHelper$asset("/assets/logo.png?inline");`)
+
+    expect(injected).toMatch(/^import _[0-9a-f]{40} from '\/assets\/logo.jpg'$/m)
+    expect(injected).toMatch(/^import _[0-9a-f]{40} from '\/assets\/logo.png\?inline'$/m)
+    expect(injected).toMatch(/var logo = _[0-9a-f]{40};\nvar inline = _[0-9a-f]{40};$/)
+  })
+
+  it('replaces adjacent asset tags', () => {
+    const injected = injectAssets(
+      `var a = ['[VITE_PLUGIN_ELM_ASSET:/assets/a.png]', '[VITE_PLUGIN_ELM_ASSET:/assets/longer-name.png]'];`,
+    )
+
+    expect(injected).toMatch(
+      /^import _[0-9a-f]{40} from '\/assets\/a.png'\nimport _[0-9a-f]{40} from '\/assets\/longer-name.png'/,
+    )
+    expect(injected).toMatch(/var a = \[_[0-9a-f]{40}, _[0-9a-f]{40}\];$/)
+  })
+
   // https://github.com/hmsk/vite-plugin-elm/issues/455
   it('throws an Error telling to pass a string literal to VitePluginHelper.asset', () => {
     const compiled = `${helper}
