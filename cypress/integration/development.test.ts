@@ -255,3 +255,20 @@ describe('raw loading', () => {
     cy.get('head meta[name="elm:plugin"]').should('have.attr', 'content', 'module Raw exposing (main)')
   })
 })
+
+describe('server.fs.allow', () => {
+  it('does not compile an Elm file outside of the allow list', () => {
+    cy.task<string>('writeElmOutsideRoot').then((outside) => {
+      const requests = [
+        `/src/Hello.elm?import&with=${encodeURIComponent(outside)}`,
+        `/@fs${outside.replace(/\\/g, '/')}?import`,
+      ]
+      for (const path of requests) {
+        cy.request({ url: onDevelopmentBuild(path), failOnStatusCode: false }).then((response) => {
+          expect(response.status).to.not.eq(200)
+          expect(response.body).to.not.contain('OUTSIDE-OF-ROOT')
+        })
+      }
+    })
+  })
+})
