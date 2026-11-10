@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { parseOptions } from './pluginOptions.js'
 
 type Result = ReturnType<typeof parseOptions>
@@ -7,9 +7,9 @@ afterEach(() => {
   vi.unstubAllEnvs()
 })
 
-describe('in dev build', () => {
+describe('on the dev server', () => {
   it('returns default in dev', () => {
-    expect(parseOptions({})).toEqual<Result>({
+    expect(parseOptions({}, false)).toEqual<Result>({
       isBuild: false,
       compilerOptions: {
         debug: true,
@@ -19,7 +19,7 @@ describe('in dev build', () => {
   })
 
   it('overwrites debug and optimize as it given', () => {
-    expect(parseOptions({ debug: false, optimize: true })).toEqual<Result>({
+    expect(parseOptions({ debug: false, optimize: true }, false)).toEqual<Result>({
       isBuild: false,
       compilerOptions: {
         debug: false,
@@ -29,7 +29,7 @@ describe('in dev build', () => {
   })
 
   it('passes pathToElm through', () => {
-    expect(parseOptions({ pathToElm: 'lamdera' })).toEqual<Result>({
+    expect(parseOptions({ pathToElm: 'lamdera' }, false)).toEqual<Result>({
       isBuild: false,
       compilerOptions: {
         debug: true,
@@ -41,10 +41,13 @@ describe('in dev build', () => {
 
   it('takes a custom compiler over options for elm', () => {
     expect(
-      parseOptions({
-        pathToElm: 'wherever',
-        compiler: { compile: async () => 'compiled' },
-      }),
+      parseOptions(
+        {
+          pathToElm: 'wherever',
+          compiler: { compile: async () => 'compiled' },
+        },
+        false,
+      ),
     ).toEqual<Result>({
       isBuild: false,
       compilerOptions: {
@@ -55,26 +58,28 @@ describe('in dev build', () => {
 
   it('passes postprocess through', () => {
     const postprocess = (js: string) => js
-    expect(parseOptions({ postprocess })).toEqual<Result>({
+    expect(parseOptions({ postprocess }, false)).toEqual<Result>({
       isBuild: false,
       compilerOptions: { debug: true, optimize: false },
       postprocess,
     })
   })
 
+  // Tools like Vitest set NODE_ENV=test, so the plugin follows Vite's command instead
+  it('does not follow NODE_ENV', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    expect(parseOptions({}, false).compilerOptions).toEqual({ debug: true, optimize: false })
+  })
+
   it('tells how to migrate from nodeElmCompilerOptions', () => {
     // @ts-expect-error removed in v4
-    expect(() => parseOptions({ nodeElmCompilerOptions: { pathToElm: 'elm' } })).toThrow(/Use `pathToElm`/)
+    expect(() => parseOptions({ nodeElmCompilerOptions: { pathToElm: 'elm' } }, false)).toThrow(/Use `pathToElm`/)
   })
 })
 
-describe('in production build', () => {
-  beforeEach(() => {
-    vi.stubEnv('NODE_ENV', 'production')
-  })
-
+describe('in vite build', () => {
   it('returns default for prod build', () => {
-    expect(parseOptions({})).toEqual<Result>({
+    expect(parseOptions({}, true)).toEqual<Result>({
       isBuild: true,
       compilerOptions: {
         debug: false,
@@ -84,7 +89,7 @@ describe('in production build', () => {
   })
 
   it('overwrites debug and optimize per just only debug', () => {
-    expect(parseOptions({ debug: true })).toEqual<Result>({
+    expect(parseOptions({ debug: true }, true)).toEqual<Result>({
       isBuild: true,
       compilerOptions: {
         debug: true,
@@ -94,7 +99,7 @@ describe('in production build', () => {
   })
 
   it('overwrites debug and optimize', () => {
-    expect(parseOptions({ debug: true, optimize: false })).toEqual<Result>({
+    expect(parseOptions({ debug: true, optimize: false }, true)).toEqual<Result>({
       isBuild: true,
       compilerOptions: {
         debug: true,

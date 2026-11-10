@@ -10,20 +10,19 @@ export interface InputOptions {
   postprocess?: Postprocess
 }
 
-interface ParsedOptions {
+export interface ParsedOptions {
+  // `vite build`, as opposed to the dev server
   isBuild: boolean
   compilerOptions: ElmCompilerOptions | CustomCompiler
   postprocess?: Postprocess
 }
 
-export const parseOptions = (inputOptions: InputOptions): ParsedOptions => {
+export const parseOptions = (inputOptions: InputOptions, isBuild: boolean): ParsedOptions => {
   if ('nodeElmCompilerOptions' in inputOptions) {
     throw new Error(
       '[vite-plugin-elm] `nodeElmCompilerOptions` was removed in v4. Use `pathToElm` instead of `nodeElmCompilerOptions.pathToElm`.',
     )
   }
-
-  const isBuild = process.env.NODE_ENV === 'production'
 
   return {
     isBuild,
