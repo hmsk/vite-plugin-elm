@@ -51,7 +51,7 @@ You can explore the [`/example`](/example) directory to experiment with an actua
 
 | vite-plugin-elm | Vite         | Elm              | Node.js                       |
 | --------------- | ------------ | ---------------- | ----------------------------- |
-| v4              | 6, 7 and 8   | 0.19.1 to 0.19.3 | `^20.19.0 \|\| >=22.12.0`     |
+| v4              | 6, 7 and 8   | 0.19.1 to 0.19.3 | `>=22.12.0`                   |
 | v3              | 5 (6–8 work) | 0.19.1           | Same as the Vite version used |
 
 For Vite 5, install v3: `npm i -D vite-plugin-elm@3`.
@@ -179,7 +179,7 @@ export default defineConfig({
 
 ## Migrating from v3
 
-- Use Vite 6, 7 or 8, and Node.js `^20.19.0 || >=22.12.0`.
+- Use Vite 6, 7 or 8, and Node.js 22.12 or later. Node.js 20 reached its end of life in April 2026, so v4 doesn't support it even though Vite 6–8 do.
 - Install `elm` in your project, or have it in `PATH`. The plugin no longer depends on [node-elm-compiler](https://github.com/rtfeldman/node-elm-compiler) and runs `elm` by itself.
 - `nodeElmCompilerOptions` is removed. Replace `nodeElmCompilerOptions.pathToElm` with [`pathToElm`](#pathtoelm). The other options of node-elm-compiler have no replacement.
 - Compile errors are reported in the format of the Elm CLI, with colors in the terminal, and point at the file and line on Vite's overlay.

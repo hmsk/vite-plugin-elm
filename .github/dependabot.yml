@@ -5,10 +5,7 @@ updates:
     schedule:
       interval: 'weekly'
     ignore:
-      # Held at the oldest Node the plugin supports (^20.19.0 || >=22.12.0).
-      # Vitest 5+ requires Node 22.12+.
-      - dependency-name: 'vitest'
-        update-types: ['version-update:semver-major']
+      # Held at the oldest Node the plugin supports (>=22.12.0)
       - dependency-name: '@types/node'
         update-types: ['version-update:semver-major']
       # Moving to TypeScript 7 is a change of its own

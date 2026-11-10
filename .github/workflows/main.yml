@@ -35,8 +35,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        # Same as engines.node, which follows Vite 7+ (20 is EOL but still allowed by Vite)
-        node-version: [20.x, 22.x, 24.x, 26.x]
+        # Same as engines.node: Node 20 is EOL, though Vite 6–8 still allow it
+        node-version: [22.x, 24.x, 26.x]
         include:
           - os: windows-latest
             node-version: 24.x
