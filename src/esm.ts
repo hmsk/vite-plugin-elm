@@ -1,14 +1,27 @@
-import { parse, type CallExpression, type ExpressionStatement, type FunctionExpression } from 'acorn'
+import { parseAst } from 'vite'
 
-const isElmWrapper = (
-  node: unknown,
-): node is ExpressionStatement & { expression: CallExpression & { callee: FunctionExpression } } => {
-  const statement = node as ExpressionStatement
+interface ElmWrapper {
+  start: number
+  end: number
+  expression: {
+    callee: {
+      params: [{ name: string }]
+      body: { start: number; end: number }
+    }
+  }
+}
+
+// `(function(scope){ ... }(this));`, the same shape in the ESTree from Rollup (Vite 6, 7) and Rolldown (Vite 8)
+const isElmWrapper = (node: unknown): node is ElmWrapper => {
+  const statement = node as {
+    type: string
+    expression?: { type: string; callee?: { type: string; params?: { type: string }[] } }
+  }
   return (
     statement.type === 'ExpressionStatement' &&
-    statement.expression.type === 'CallExpression' &&
-    statement.expression.callee.type === 'FunctionExpression' &&
-    statement.expression.callee.params.length === 1 &&
+    statement.expression?.type === 'CallExpression' &&
+    statement.expression.callee?.type === 'FunctionExpression' &&
+    statement.expression.callee.params?.length === 1 &&
     statement.expression.callee.params[0].type === 'Identifier'
   )
 }
@@ -19,9 +32,10 @@ const isElmWrapper = (
  */
 export const toESModule = (compiled: string): string => {
   const unexpected = 'Unexpected output from the Elm compiler: expected `(function(scope){ ... }(this));`'
-  let program: ReturnType<typeof parse>
+  let program: { body: unknown[] }
   try {
-    program = parse(compiled, { ecmaVersion: 'latest', sourceType: 'script' })
+    // Vite parses as a module, which Elm's output is fine as: it's in strict mode
+    program = parseAst(compiled)
   } catch (e) {
     throw new Error(`${unexpected}, but ${e instanceof Error ? e.message : e}`, { cause: e })
   }
@@ -29,7 +43,7 @@ export const toESModule = (compiled: string): string => {
   if (!wrapper) throw new Error(unexpected)
 
   const callee = wrapper.expression.callee
-  const scope = callee.params[0].type === 'Identifier' ? callee.params[0].name : 'scope'
+  const scope = callee.params[0].name
   const body = compiled.slice(callee.body.start + 1, callee.body.end - 1)
   return `${compiled.slice(0, wrapper.start)}const ${scope} = {};${body}\nexport const Elm = ${scope}.Elm;\n${compiled.slice(wrapper.end)}`
 }
