@@ -1,28 +1,16 @@
 /**
- * This approach comes from snowpack-plugin-elm by Marc Walter
- * https://github.com/marc136/snowpack-plugin-elm
- *
- * To avoid gets an error: "It looks like some of the information cached in elm-stuff/ has been corrupted." from Elm compiler
- * Elm compiler uses elm-stuff dir for cache which is expected not to be touched by other thread's compilation
+ * Elm compiler keeps its cache in elm-stuff, which breaks when two compilations write it at once:
+ * "It looks like some of the information cached in elm-stuff/ has been corrupted." or "resource busy (file is locked)"
+ * So compilations run one at a time, in the order they ask for the lock.
  */
-const queue: (() => void)[] = []
-let locked = false
+let last: Promise<void> = Promise.resolve()
 
-export const acquireLock = async () => {
-  await new Promise<void>((resolve) => {
-    if (!locked) {
-      resolve()
-      return
-    }
-    queue.push(resolve)
+export const acquireLock = async (): Promise<() => void> => {
+  let release!: () => void
+  const previous = last
+  last = new Promise<void>((resolve) => {
+    release = resolve
   })
-
-  locked = true
-
-  return () => {
-    queue.shift()?.()
-    if (queue.length === 0) {
-      locked = false
-    }
-  }
+  await previous
+  return release
 }
