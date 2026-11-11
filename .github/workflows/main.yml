@@ -22,8 +22,6 @@ jobs:
           cache: npm
 
       - run: npm ci
-        env:
-          CYPRESS_INSTALL_BINARY: 0
 
       - name: Run oxlint and oxfmt
         run: npm run lint
@@ -54,8 +52,6 @@ jobs:
 
       # `npm ci` builds the package through the `prepare` script
       - run: npm ci
-        env:
-          CYPRESS_INSTALL_BINARY: 0
 
       - name: Run unit tests
         run: npm run test:ci
@@ -96,36 +92,19 @@ jobs:
           npx vite --version
           npx elm --version
 
+      # The runner image already has the libraries Chromium needs. --with-deps would only add fonts,
+      # and makes the job fail whenever the runner can't reach Ubuntu's package archive
+      - name: Install Chromium
+        run: npx playwright install --only-shell chromium
+
+      # Builds the plugin, then runs each test file on its own copy of the example
       - name: Run integration tests
-        uses: cypress-io/github-action@v7
+        run: npm run test:e2e
+
+      - name: Upload traces of failed tests
+        if: failure()
+        uses: actions/upload-artifact@v7
         with:
-          install: false
-          build: npm run build --prefix example
-          start: npm run cypress:prepare
-          wait-on: 'http://localhost:8936, http://localhost:8938'
-
-  e2e-eol2:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version-file: .tool-versions
-          cache: npm
-
-      - run: npm ci
-
-      - name: Install the example
-        working-directory: example
-        run: npm ci
-
-      - name: Run production tests on a build with elm-optimize-level-2
-        uses: cypress-io/github-action@v7
-        with:
-          install: false
-          build: npm run build:eol2 --prefix example
-          start: npm run test-server:preview
-          wait-on: 'http://localhost:8938'
-          spec: cypress/integration/production.test.ts
+          name: traces-vite-${{ matrix.vite }}-elm-${{ matrix.elm }}
+          path: test-results
+          retention-days: 7

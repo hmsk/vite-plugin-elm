@@ -13,7 +13,7 @@ A clear and concise description of what the bug is.
 **Reproducible repo**
 Provide a link for a minimum repo to reproduce your problem in other developers local instantly. It'll be great providing screenshots/screencasts to help explain your problem.
 
-Or clone and edit `/example` project under this plugin's repo with tests under `/cypress/integration` which fails for your expected behavior.
+Or clone and edit `/example` project under this plugin's repo with tests under `/e2e` which fails for your expected behavior.
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
