@@ -7,8 +7,9 @@ export default function setup() {
   if (!existsSync(join(exampleDir, 'node_modules'))) {
     throw new Error('Install the example first: npm install --prefix example')
   }
-  // The example uses this plugin from dist
-  execFileSync('npm', ['run', 'build'], { cwd: repositoryDir, stdio: 'inherit' })
+  // The example uses this plugin from dist. Built without type checks, as CI runs it on Vite 6 and 7 too,
+  // whose types differ from Vite 8's that the plugin is checked with
+  execFileSync('npm', ['run', 'build', '--', '--noCheck'], { cwd: repositoryDir, stdio: 'inherit' })
   // Download Elm packages and compile every entry once, before test files compile their copies of the example at once
   const entries = ['Hello', 'Application', 'Description', 'AnotherDescription', 'Worker', 'WorkerCompanion']
   execFileSync(

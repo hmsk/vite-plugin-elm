@@ -1,10 +1,10 @@
-import { parse } from 'acorn'
+import { parseAst } from 'vite'
 import { describe, expect, it } from 'vitest'
 
 import { injectHMR } from './hmrInjector.js'
 
 const compiled = 'export const Elm = {};'
-const parseModule = (code: string) => parse(code, { ecmaVersion: 'latest', sourceType: 'module' })
+const parseModule = (code: string) => parseAst(code)
 
 describe('injectHMR', () => {
   it('does not accept updates of dependencies when there is none', () => {

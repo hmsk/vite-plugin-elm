@@ -92,6 +92,14 @@ jobs:
           npx vite --version
           npx elm --version
 
+      # The example links this plugin, which imports vite from the repository's node_modules,
+      # so the plugin also runs on the Vite under test, as it does in a project.
+      # After installing the example, which builds the plugin with the types of Vite 8
+      - name: Use Vite ${{ matrix.vite }} for the plugin
+        run: |
+          npm install --no-save vite@${{ matrix.vite }}
+          node -p "'vite ' + require('vite/package.json').version"
+
       # The runner image already has the libraries Chromium needs. --with-deps would only add fonts,
       # and makes the job fail whenever the runner can't reach Ubuntu's package archive
       - name: Install Chromium
