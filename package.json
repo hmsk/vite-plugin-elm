@@ -17,13 +17,9 @@
     "prepare": "npm run build",
     "build:example": "cd ./example && npm i && npm run build",
     "build:example:eol2": "cd ./example && npm run build:eol2",
-    "test": "vitest",
-    "test:ci": "vitest run",
-    "test-server:dev": "vite example --port 8936",
-    "test-server:preview": "cd ./example && npm run preview -- --port 8938",
-    "cypress:prepare": "run-p test-server:*",
-    "cypress:open": "cypress open",
-    "cypress:run": "cypress run"
+    "test": "vitest --project unit",
+    "test:ci": "vitest run --project unit",
+    "test:e2e": "vitest run --project e2e"
   },
   "repository": {
     "type": "git",
@@ -67,19 +63,15 @@
   },
   "devDependencies": {
     "@types/node": "22.20.5",
-    "cypress": "16.2.1",
-    "npm-run-all": "4.1.5",
     "oxfmt": "0.78.0",
     "oxlint": "1.93.0",
+    "playwright": "1.65.0",
     "typescript": "6.0.3",
     "vite": "8.3.6",
     "vitest": "4.1.12"
   },
   "peerDependencies": {
     "vite": "^6.0.0 || ^7.0.0 || ^8.0.0"
-  },
-  "allowScripts": {
-    "cypress": true
   },
   "engines": {
     "node": ">=22.12.0"
