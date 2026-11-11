@@ -5,7 +5,7 @@ import { findLocalDependencies } from './dependencies.js'
 import { ElmCompileError } from './elmMake.js'
 import { injectHMR } from './hmrInjector.js'
 import { acquireLock } from './mutex.js'
-import { parseOptions, type InputOptions } from './pluginOptions.js'
+import { parseOptions, type InputOptions, type ParsedOptions } from './pluginOptions.js'
 
 const trimDebugMessage = (code: string): string => code.replace(/(console\.warn\('Compiled in DEBUG mode)/, '// $1')
 const viteProjectPath = (dependency: string) => `/${relative(process.cwd(), dependency)}`
@@ -29,7 +29,8 @@ export type { InputOptions as Options }
 export type { CustomCompiler, Postprocess } from './compiler.js'
 
 export const plugin = (userOptions: InputOptions = {}): Plugin => {
-  const options = parseOptions(userOptions)
+  // Checked here to fail early, and decided again once Vite tells the command
+  let options: ParsedOptions = parseOptions(userOptions, false)
   const compilableFiles: Map<string, Set<string>> = new Map()
   // Importer of each `?with=` import, which accompanying paths are relative to
   const importersOfCombined: Map<string, string> = new Map()
@@ -40,6 +41,8 @@ export const plugin = (userOptions: InputOptions = {}): Plugin => {
     enforce: 'pre',
     configResolved(resolvedConfig) {
       config = resolvedConfig
+      // The command, not NODE_ENV, as tools like Vitest set NODE_ENV=test, which `vite build` keeps
+      options = parseOptions(userOptions, resolvedConfig.command === 'build')
     },
     async resolveId(source, importer, options) {
       if (!importer || !source.includes('.elm')) return null

@@ -58,7 +58,7 @@ For Vite 5, install v3: `npm i -D vite-plugin-elm@3`.
 
 ## Options
 
-### `debug` (Default: `process.env.NODE_ENV !== 'production'`)
+### `debug` (Default: `true` on the dev server, `false` in `vite build`)
 
 You can control the debug mode of Elm, which toggles the Elm Debugger, by providing a boolean value.
 
@@ -70,7 +70,15 @@ elmPlugin({ debug: false })
 
 When set to `false`, it disables debug mode in both development and production. Conversely, setting it to `true` enables debug mode even in production. It's important to note that **when the production build has debug mode enabled, Elm's compiler optimizations do not take place**.
 
-### `optimize` (Default: `!debug && process.env.NODE_ENV === 'production'`)
+The defaults follow Vite's command, not `NODE_ENV`. To build with the debugger in a mode of your own, decide it in your config:
+
+```ts
+export default defineConfig(({ mode }) => ({
+  plugins: [elmPlugin({ debug: mode === 'staging' })],
+}))
+```
+
+### `optimize` (Default: `!debug` in `vite build`, `false` on the dev server)
 
 You can control build optimization by providing a boolean value, which can be useful for using [`Debug`](https://package.elm-lang.org/packages/elm/core/latest/Debug) functions in your Elm code.
 
@@ -182,6 +190,7 @@ export default defineConfig({
 - Use Vite 6, 7 or 8, and Node.js 22.12 or later. Node.js 20 reached its end of life in April 2026, so v4 doesn't support it even though Vite 6–8 do.
 - Install `elm` in your project, or have it in `PATH`. The plugin no longer depends on [node-elm-compiler](https://github.com/rtfeldman/node-elm-compiler) and runs `elm` by itself.
 - `nodeElmCompilerOptions` is removed. Replace `nodeElmCompilerOptions.pathToElm` with [`pathToElm`](#pathtoelm). The other options of node-elm-compiler have no replacement.
+- `debug` and `optimize` default by Vite's command (`vite build` or the dev server) instead of `NODE_ENV`. `NODE_ENV=development vite build` makes an optimized build now; set [`debug`](#debug-default-true-on-the-dev-server-false-in-vite-build) to build with the debugger.
 - Compile errors are reported in the format of the Elm CLI, with colors in the terminal, and point at the file and line on Vite's overlay.
 - If you use elm-optimize-level-2 through `compiler`, move to [`postprocess`](#postprocess) to keep static assets and combined main files working.
 
