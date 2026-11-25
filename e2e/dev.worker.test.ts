@@ -26,6 +26,21 @@ describe('Platform.worker', () => {
       await page.getByText('Browser.element bundled with Platform.worker').waitFor()
     })
 
+    test('reloads the page when a port is added, which JavaScript has not had a chance to use', async () => {
+      const { page } = example
+      await page.getByText('Pong from Elm worker to the main thread').waitFor()
+      const reloaded = page.waitForEvent('load')
+      // Elm drops a port that no code uses, so add one with its use
+      await example.amend(
+        'src/Worker.elm',
+        '( model, pong ("Pong from Elm worker to " ++ from) )',
+        '( model, Cmd.batch [ pong ("Pong from Elm worker to " ++ from), pongAgain from ] )\n\n\nport pongAgain : String -> Cmd msg',
+      )
+      await reloaded
+      expect(await navigationType(page)).toBe('reload')
+      await page.getByText('Pong from Elm worker to the main thread').waitFor()
+    })
+
     test('performs HMR for editing an element bundled with a worker', async () => {
       const { page } = example
       await page.getByText('Browser.element bundled with Platform.worker').waitFor()

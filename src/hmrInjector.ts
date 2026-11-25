@@ -93,6 +93,7 @@ if (import.meta.hot) {
     const id = getId()
     const instance = {
       id, path, domNode, flags, portSubscribes, portSends,
+      portNames: [],
       lastState: null,
       // What init gave at first, to tell whether init has changed on swapping
       initResult: null,
@@ -148,6 +149,7 @@ if (import.meta.hot) {
         if (domNode === null && typeof document !== 'undefined') domNode = document.body
         initializingInstance = registerInstance(domNode, flags, path, portSubscribes, portSends)
         elm = originalInit(args)
+        initializingInstance.portNames = Object.keys(elm.ports || {})
         // Platform.worker owns no DOM, so leave the page as it is on swapping
         if (initializingInstance.isWorker) initializingInstance.domNode = null
         wrapPorts(elm, portSubscribes, portSends)
@@ -185,6 +187,17 @@ if (import.meta.hot) {
         // Nothing is left on the page, as the DOM is cleared and the old instance is stopped
         console.error("[vite-plugin-elm] Hot-swapping " + instance.path + " failed. Refreshes page", e)
         import.meta.hot.invalidate("Hot-swapping " + instance.path + " failed: " + e.message)
+        swappingInstance = null
+        return
+      }
+
+      // JavaScript has subscribed to or sent to ports only as of the page load
+      const portNames = Object.keys(elm.ports || {})
+      const addedPorts = portNames.filter((name) => !instance.portNames.includes(name))
+      instance.portNames = portNames
+      if (addedPorts.length > 0) {
+        console.log("[vite-plugin-elm] Port is added: " + addedPorts.join(", ") + ". Refreshes page")
+        import.meta.hot.invalidate("Ports are added to " + instance.path + ": " + addedPorts.join(", "))
         swappingInstance = null
         return
       }
