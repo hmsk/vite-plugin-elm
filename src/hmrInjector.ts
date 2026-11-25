@@ -177,7 +177,16 @@ if (import.meta.hot) {
         containerNode.appendChild(nodeForEmbed)
         args.node = nodeForEmbed
       }
-      const elm = m.init(args)
+      let elm
+      try {
+        elm = m.init(args)
+      } catch (e) {
+        // Nothing is left on the page, as the DOM is cleared and the old instance is stopped
+        console.error("[vite-plugin-elm] Hot-swapping " + instance.path + " failed. Refreshes page", e)
+        import.meta.hot.invalidate("Hot-swapping " + instance.path + " failed: " + e.message)
+        swappingInstance = null
+        return
+      }
 
       Object.keys(instance.portSubscribes).forEach((portName) => {
         if (portName in elm.ports && 'subscribe' in elm.ports[portName]) {
@@ -290,7 +299,6 @@ if (import.meta.hot) {
     // _Platform_worker passes \`function() { return function() {} }\` while every
     // Browser program passes \`function(sendToApp, initialModel)\`
     if (instance) instance.isWorker = stepperBuilder.length === 0
-    let tryFirstRender = !!swappingInstance
 
     const hookedInit = (args) => {
       const initialStateTuple = swappingInstance ? initWithInitialUrl(init, args, swappingInstance.initialHref) : init(args)
@@ -300,7 +308,10 @@ if (import.meta.hot) {
 
         if (JSON.stringify(newModel.state?.a ? newModel.state.a : newModel) !== swappingInstance.initialState) {
           console.log("[vite-plugin-elm] Initial state seems to be updated. Refreshes page")
-          import.meta.hot.invalidate()
+          import.meta.hot.invalidate("Initial state of " + swappingInstance.path + " seems to be updated")
+          // Until the page reloads, show what the new init gives rather than the kept state, which may not fit the new code
+          initialStateTuple.b = elmSymbol("elm$core$Platform$Cmd$none")
+          return initialStateTuple
         }
 
         if (isApplication()) {
@@ -339,17 +350,7 @@ if (import.meta.hot) {
     }
 
     const hookedStepperBuilder = (sendToApp, model) => {
-      let result
-      if (tryFirstRender) {
-        tryFirstRender = false
-        try {
-          result = stepperBuilder(sendToApp, model)
-        } catch (e) {
-          throw new Error("[vite-plugin-elm] Hot-swapping " + instance.path + " is not possible, please reload page. Error: " + e.message)
-        }
-      } else {
-        result = stepperBuilder(sendToApp, model)
-      }
+      const result = stepperBuilder(sendToApp, model)
 
       return (nextModel, isSync) => {
         if (instance) instance.lastState = nextModel
