@@ -94,6 +94,8 @@ if (import.meta.hot) {
     const instance = {
       id, path, domNode, flags, portSubscribes, portSends,
       portNames: [],
+      // How the program builds its view, which differs between kinds of programs. None for Html as main
+      program: null,
       lastState: null,
       // What init gave at first, to tell whether init has changed on swapping
       initResult: null,
@@ -180,6 +182,7 @@ if (import.meta.hot) {
         containerNode.appendChild(nodeForEmbed)
         args.node = nodeForEmbed
       }
+      instance.swappedProgram = null
       let elm
       try {
         elm = m.init(args)
@@ -187,6 +190,13 @@ if (import.meta.hot) {
         // Nothing is left on the page, as the DOM is cleared and the old instance is stopped
         console.error("[vite-plugin-elm] Hot-swapping " + instance.path + " failed. Refreshes page", e)
         import.meta.hot.invalidate("Hot-swapping " + instance.path + " failed: " + e.message)
+        swappingInstance = null
+        return
+      }
+
+      if (instance.swappedProgram !== instance.program) {
+        console.log("[vite-plugin-elm] The kind of program has changed. Refreshes page")
+        import.meta.hot.invalidate("The kind of program of " + instance.path + " has changed")
         swappingInstance = null
         return
       }
@@ -337,12 +347,24 @@ if (import.meta.hot) {
     // _Platform_worker passes \`function() { return function() {} }\` while every
     // Browser program passes \`function(sendToApp, initialModel)\`
     if (instance) instance.isWorker = stepperBuilder.length === 0
+    const program = String(stepperBuilder)
+    if (initializingInstance) {
+      initializingInstance.program = program
+    } else if (swappingInstance) {
+      swappingInstance.swappedProgram = program
+    }
 
     const hookedInit = (args) => {
       const initialStateTuple = swappingInstance ? initWithInitialUrl(init, args, swappingInstance.initialHref) : init(args)
       if (swappingInstance) {
         let oldModel = swappingInstance.lastState
         const newModel = initialStateTuple.a
+
+        // Another kind of program, which the swap reloads the page for, may not take the kept state
+        if (program !== swappingInstance.program) {
+          initialStateTuple.b = elmSymbol("elm$core$Platform$Cmd$none")
+          return initialStateTuple
+        }
 
         const initResult = swappingInstance.initResult
         if (!equalIgnoringFunctions(appModel(newModel), initResult.model) || !equalIgnoringFunctions(initialStateTuple.b, initResult.cmd)) {

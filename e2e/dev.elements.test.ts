@@ -24,6 +24,20 @@ describe('multiple Browser.element', () => {
       expect(await navigationType(page)).toBe('navigate')
     })
 
+    test('reloads the page when the flags no longer decode', async () => {
+      const { page } = example
+      await page.getByText('The above sentence').waitFor()
+      const reloaded = page.waitForEvent('load')
+      await example.amend(
+        'src/Description.elm',
+        'init : String -> ( Model, Cmd Msg )\ninit initialMesssage =\n    ( { message = initialMesssage }, Cmd.none )',
+        'init : Int -> ( Model, Cmd Msg )\ninit initialMesssage =\n    ( { message = String.fromInt initialMesssage }, Cmd.none )',
+      )
+      await example.amend('src/Description.elm', 'main : Program String Model Msg', 'main : Program Int Model Msg')
+      await reloaded
+      expect(await navigationType(page)).toBe('reload')
+    })
+
     test('performs HMR for editing imported module', async () => {
       const { page } = example
       await page.getByText('3.0').waitFor()
