@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from 'vitest'
-import { useExample } from './example.js'
+import { navigationType, useExample } from './example.js'
 
 const example = useExample({ command: 'dev' })
 
@@ -10,6 +10,61 @@ describe('Browser.application', () => {
 
   test('seems to be working', async () => {
     await example.page.getByText('Your Elm App is working!').waitFor()
+  })
+
+  describe('HMR', () => {
+    test('performs HMR for editing view', async () => {
+      const { page } = example
+      await page.getByLabel('Count').click()
+      await page.getByText('Clicked 1 times').waitFor()
+      await example.amend('src/Application.elm', 'navigate within the app', 'Replaced Message')
+      await page.getByText('Replaced Message').waitFor()
+      expect(await navigationType(page)).toBe('navigate')
+      await page.getByText('Clicked 1 times').waitFor()
+    })
+
+    test('performs HMR for editing view after navigating within the app', async () => {
+      const { page } = example
+      await page.getByLabel('Count').click()
+      await page.getByText('Move').click()
+      await page.getByText('Fragment: moved').waitFor()
+      await example.amend('src/Application.elm', 'navigate within the app', 'Replaced Message')
+      await page.getByText('Replaced Message').waitFor()
+      expect(await navigationType(page)).toBe('navigate')
+      await page.getByText('Clicked 1 times').waitFor()
+    })
+
+    test('keeps handling URL changes after HMR', async () => {
+      const { page } = example
+      await example.amend('src/Application.elm', 'navigate within the app', 'Replaced Message')
+      await page.getByText('Replaced Message').waitFor()
+      await page.getByText('Move').click()
+      await page.getByText('Fragment: moved').waitFor()
+      // Rendering the swapped app again shows what its model has, not what the old app left on the page
+      await page.getByLabel('Count').click()
+      await page.getByText('Clicked 1 times').waitFor()
+      expect(await page.getByText('Fragment: moved').count()).toBe(1)
+      await page.goBack()
+      await page.getByText('Fragment: none').waitFor()
+      await page.getByLabel('Count').click()
+      await page.getByText('Clicked 2 times').waitFor()
+      expect(await page.getByText('Fragment: none').count()).toBe(1)
+    })
+
+    test('keeps the app working while a compile error is shown, then performs HMR for the fix', async () => {
+      const { page } = example
+      await page.getByLabel('Count').click()
+      await example.amend('src/Application.elm', '"navigate within the app"', '"navigate within the app" ++ 1')
+      await page.locator('vite-error-overlay .window').waitFor()
+      await page.keyboard.press('Escape')
+      await page.getByText('Move').click()
+      await page.getByText('Fragment: moved').waitFor()
+      await example.amend('src/Application.elm', '"navigate within the app" ++ 1', '"Fixed Message"')
+      await page.getByText('Fixed Message').waitFor()
+      expect(await navigationType(page)).toBe('navigate')
+      await page.getByText('Clicked 1 times').waitFor()
+      expect(await page.getByText('Fragment: moved').count()).toBe(1)
+    })
   })
 
   describe('assets', () => {

@@ -58,14 +58,17 @@ if (import.meta.hot) {
     data.instances = instances
     data.uid = uid
 
-    _Scheduler_binding = () => _Scheduler_fail(new Error("[vite-plugin-elm] Inactive Elm instance."))
+    // Vite disposes before the next version is compiled, which may fail, so keep running until that one takes over
+    data.deactivate = () => {
+      _Scheduler_binding = () => _Scheduler_fail(new Error("[vite-plugin-elm] Inactive Elm instance."))
 
-    if (cancellers.length) {
-      console.log("[vite-plugin-elm] Killing " + cancellers.length + " running processes...")
-      try {
-        cancellers.forEach((cancel) => { cancel() })
-      } catch (e) {
-        console.warn("[vite-plugin-elm] Kill process error: ", e.message)
+      if (cancellers.length) {
+        console.log("[vite-plugin-elm] Killing " + cancellers.length + " running processes...")
+        try {
+          cancellers.forEach((cancel) => { cancel() })
+        } catch (e) {
+          console.warn("[vite-plugin-elm] Kill process error: ", e.message)
+        }
       }
     }
   })
@@ -92,12 +95,30 @@ if (import.meta.hot) {
       id, path, domNode, flags, portSubscribes, portSends,
       lastState: null,
       initialState: null,
+      // The URL Browser.application started with, which its init is given again on swapping
+      initialHref: typeof location !== 'undefined' ? location.href : null,
       isWorker: false
     }
     return instances[id] = instance
   }
 
-  const isFullscreenApp = () => typeof elmSymbol("elm$browser$Browser$application") !== 'undefined' || typeof elmSymbol("elm$browser$Browser$document") !== 'undefined'
+  const isApplication = () => typeof elmSymbol("elm$browser$Browser$application") !== 'undefined'
+  const isFullscreenApp = () => isApplication() || typeof elmSymbol("elm$browser$Browser$document") !== 'undefined'
+
+  // Runs init as of the URL the app started with, so navigating within the app doesn't look like a change of init
+  const initWithInitialUrl = (init, args, href) => {
+    const fromString = elmSymbol("elm$url$Url$fromString")
+    const url = href && fromString ? fromString(href) : null
+    if (!isApplication() || !url || (url.$ !== 'Just' && url.$ !== 0)) return init(args)
+
+    const getUrl = _Browser_getUrl
+    _Browser_getUrl = () => url.a
+    try {
+      return init(args)
+    } finally {
+      _Browser_getUrl = getUrl
+    }
+  }
 
   const wrapDomNode = (node) => {
     const dummyNode = document.createElement("div")
@@ -272,7 +293,7 @@ if (import.meta.hot) {
     let tryFirstRender = !!swappingInstance
 
     const hookedInit = (args) => {
-      const initialStateTuple = init(args)
+      const initialStateTuple = swappingInstance ? initWithInitialUrl(init, args, swappingInstance.initialHref) : init(args)
       if (swappingInstance) {
         let oldModel = swappingInstance.lastState
         const newModel = initialStateTuple.a
@@ -282,11 +303,13 @@ if (import.meta.hot) {
           import.meta.hot.invalidate()
         }
 
-        if (typeof elmSymbol("elm$browser$Browser$application") !== "undefined" && typeof elmSymbol("elm$browser$Browser$Navigation") !== "undefined") {
+        if (isApplication()) {
           const oldKeyLoc = findNavKey(oldModel)
           const newKeyLoc = findNavKey(newModel)
           let error = null
-          if (newKeyLoc === null) {
+          if (oldKeyLoc === null && newKeyLoc === null) {
+            // The app keeps no Browser.Navigation.Key, so there is none to replace
+          } else if (newKeyLoc === null) {
             error = "could not find Browser.Navigation.Key in the new app model"
           } else if (oldKeyLoc === null) {
             error = "could not find Browser.Navigation.Key in the old app model"
@@ -350,6 +373,12 @@ if (import.meta.hot) {
   })
 
   const swapInstances = (Elm) => {
+    const deactivatePrevious = import.meta.hot.data && import.meta.hot.data.deactivate
+    if (deactivatePrevious) {
+      delete import.meta.hot.data.deactivate
+      deactivatePrevious()
+    }
+
     const removedInstances = []
     Object.entries(instances).forEach(([id, instance]) => {
       if (instance.domNode === null || instance.domNode.parentNode) {
