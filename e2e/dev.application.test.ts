@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from 'vitest'
-import { useExample } from './example.js'
+import { navigationType, useExample } from './example.js'
 
 const example = useExample({ command: 'dev' })
 
@@ -10,6 +10,18 @@ describe('Browser.application', () => {
 
   test('seems to be working', async () => {
     await example.page.getByText('Your Elm App is working!').waitFor()
+  })
+
+  describe('HMR', () => {
+    test('performs HMR for editing view', async () => {
+      const { page } = example
+      await page.getByLabel('Count').click()
+      await page.getByText('Clicked 1 times').waitFor()
+      await example.amend('src/Application.elm', 'navigate within the app', 'Replaced Message')
+      await page.getByText('Replaced Message').waitFor()
+      expect(await navigationType(page)).toBe('navigate')
+      await page.getByText('Clicked 1 times').waitFor()
+    })
   })
 
   describe('assets', () => {
