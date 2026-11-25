@@ -308,7 +308,10 @@ if (import.meta.hot) {
 
         if (JSON.stringify(newModel.state?.a ? newModel.state.a : newModel) !== swappingInstance.initialState) {
           console.log("[vite-plugin-elm] Initial state seems to be updated. Refreshes page")
-          import.meta.hot.invalidate()
+          import.meta.hot.invalidate("Initial state of " + swappingInstance.path + " seems to be updated")
+          // Until the page reloads, show what the new init gives rather than the kept state, which may not fit the new code
+          initialStateTuple.b = elmSymbol("elm$core$Platform$Cmd$none")
+          return initialStateTuple
         }
 
         if (isApplication()) {
