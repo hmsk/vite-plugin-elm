@@ -172,17 +172,23 @@ export const useExample = ({ command, env }: Options) => {
     },
     url: (path: string) => new URL(path, server.url).toString(),
     goto: (path: string) => page.goto(new URL(path, server.url).toString()),
-    // Replaces `target` in a file of the example copy, e.g. `src/Hello.elm`
-    amend: async (path: string, target: string, replacement: string) => {
+    // Replaces `target` in a file of the example copy, e.g. `src/Hello.elm`. Give pairs of a target and its replacement
+    // for edits at once, as Vite may miss a change that follows another too soon
+    amend: async (path: string, ...edit: [target: string, replacement: string] | [[string, string][]]) => {
+      const replacements = typeof edit[0] === 'string' ? [edit as [string, string]] : edit[0]
       const file = join(dir, path)
       const content = await readFile(file, 'utf8')
-      if (!content.includes(target)) {
-        throw new Error(`${path} does not contain ${JSON.stringify(target)}`)
-      }
       if (!originals.has(file)) {
         originals.set(file, content)
       }
-      await writeFile(file, content.replace(target, replacement))
+      let amended = content
+      for (const [target, replacement] of replacements) {
+        if (!amended.includes(target)) {
+          throw new Error(`${path} does not contain ${JSON.stringify(target)}`)
+        }
+        amended = amended.replace(target, replacement)
+      }
+      await writeFile(file, amended)
     },
   }
 }

@@ -96,14 +96,12 @@ describe('Browser.application', () => {
     test('leaves only the swapped app listening to URL changes, even without the key in its model', async () => {
       const { page } = example
       // Drop the key from the model, and the page reloads as init gives another state
-      await example.amend(
-        'src/Application.elm',
-        '( model, Nav.pushUrl model.key (Url.toString url) )',
-        '( model, Cmd.none )',
-      )
-      await example.amend('src/Application.elm', '{ key : Nav.Key\n    , url : Url', '{ url : Url')
       const reloaded = page.waitForEvent('load')
-      await example.amend('src/Application.elm', '{ key = key, url = url, clicks = 0 }', '{ url = url, clicks = 0 }')
+      await example.amend('src/Application.elm', [
+        ['( model, Nav.pushUrl model.key (Url.toString url) )', '( model, Cmd.none )'],
+        ['{ key : Nav.Key\n    , url : Url', '{ url : Url'],
+        ['{ key = key, url = url, clicks = 0 }', '{ url = url, clicks = 0 }'],
+      ])
       await reloaded
       await page.getByText('Fragment: none').waitFor()
       expect(await popstateListeners(page)).toBe(1)

@@ -28,12 +28,13 @@ describe('multiple Browser.element', () => {
       const { page } = example
       await page.getByText('The above sentence').waitFor()
       const reloaded = page.waitForEvent('load')
-      await example.amend(
-        'src/Description.elm',
-        'init : String -> ( Model, Cmd Msg )\ninit initialMesssage =\n    ( { message = initialMesssage }, Cmd.none )',
-        'init : Int -> ( Model, Cmd Msg )\ninit initialMesssage =\n    ( { message = String.fromInt initialMesssage }, Cmd.none )',
-      )
-      await example.amend('src/Description.elm', 'main : Program String Model Msg', 'main : Program Int Model Msg')
+      await example.amend('src/Description.elm', [
+        ['main : Program String Model Msg', 'main : Program Int Model Msg'],
+        [
+          'init : String -> ( Model, Cmd Msg )\ninit initialMesssage =\n    ( { message = initialMesssage }, Cmd.none )',
+          'init : Int -> ( Model, Cmd Msg )\ninit initialMesssage =\n    ( { message = String.fromInt initialMesssage }, Cmd.none )',
+        ],
+      ])
       await reloaded
       expect(await navigationType(page)).toBe('reload')
     })
