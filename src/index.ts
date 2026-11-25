@@ -1,4 +1,4 @@
-import { normalize, relative, resolve } from 'path'
+import { basename, join, normalize, relative, resolve } from 'path'
 import { isFileLoadingAllowed, normalizePath, type EnvironmentModuleNode, type Plugin, type ResolvedConfig } from 'vite'
 import { compile, findClosestElmJson } from './compiler.js'
 import { findLocalDependencies } from './dependencies.js'
@@ -58,7 +58,8 @@ export const plugin = (userOptions: InputOptions = {}): Plugin => {
     hotUpdate({ type, file, modules }) {
       if (type !== 'update') return
       const { valid } = parseImportId(file)
-      if (!valid) return
+      // Changing elm.json, e.g. by `elm install`, changes what Elm files compile to
+      if (!valid && basename(file) !== 'elm.json') return
 
       const modulesToCompile: EnvironmentModuleNode[] = []
       compilableFiles.forEach((dependencies, compilableFile) => {
@@ -105,10 +106,12 @@ export const plugin = (userOptions: InputOptions = {}): Plugin => {
       }
 
       compilableFiles.delete(id)
-      const dependencies = [
-        ...new Set(targets.flatMap((target) => findLocalDependencies(target, findClosestElmJson(target)))),
+      const elmJsonDirs = targets.map((target) => findClosestElmJson(target))
+      const dependencies = [...new Set(targets.flatMap((target, i) => findLocalDependencies(target, elmJsonDirs[i])))]
+      const elmJsons = [
+        ...new Set(elmJsonDirs.flatMap((elmJsonDir) => (elmJsonDir ? [join(elmJsonDir, 'elm.json')] : []))),
       ]
-      compilableFiles.set(id, new Set([...accompanies, ...dependencies]))
+      compilableFiles.set(id, new Set([...accompanies, ...dependencies, ...elmJsons]))
 
       const releaseLock = await acquireLock()
       try {
@@ -116,7 +119,7 @@ export const plugin = (userOptions: InputOptions = {}): Plugin => {
 
         // Apparently `addWatchFile` may not exist: https://github.com/hmsk/vite-plugin-elm/pull/36
         if (this.addWatchFile) {
-          dependencies.forEach(this.addWatchFile.bind(this))
+          for (const file of [...dependencies, ...elmJsons]) this.addWatchFile(file)
         }
 
         return {
