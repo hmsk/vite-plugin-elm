@@ -22,6 +22,17 @@ describe('Browser.application', () => {
       expect(await navigationType(page)).toBe('navigate')
       await page.getByText('Clicked 1 times').waitFor()
     })
+
+    test('performs HMR for editing view after navigating within the app', async () => {
+      const { page } = example
+      await page.getByLabel('Count').click()
+      await page.getByText('Move').click()
+      await page.getByText('Fragment: moved').waitFor()
+      await example.amend('src/Application.elm', 'navigate within the app', 'Replaced Message')
+      await page.getByText('Replaced Message').waitFor()
+      expect(await navigationType(page)).toBe('navigate')
+      await page.getByText('Clicked 1 times').waitFor()
+    })
   })
 
   describe('assets', () => {

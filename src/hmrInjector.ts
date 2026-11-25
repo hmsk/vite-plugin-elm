@@ -92,12 +92,30 @@ if (import.meta.hot) {
       id, path, domNode, flags, portSubscribes, portSends,
       lastState: null,
       initialState: null,
+      // The URL Browser.application started with, which its init is given again on swapping
+      initialHref: typeof location !== 'undefined' ? location.href : null,
       isWorker: false
     }
     return instances[id] = instance
   }
 
-  const isFullscreenApp = () => typeof elmSymbol("elm$browser$Browser$application") !== 'undefined' || typeof elmSymbol("elm$browser$Browser$document") !== 'undefined'
+  const isApplication = () => typeof elmSymbol("elm$browser$Browser$application") !== 'undefined'
+  const isFullscreenApp = () => isApplication() || typeof elmSymbol("elm$browser$Browser$document") !== 'undefined'
+
+  // Runs init as of the URL the app started with, so navigating within the app doesn't look like a change of init
+  const initWithInitialUrl = (init, args, href) => {
+    const fromString = elmSymbol("elm$url$Url$fromString")
+    const url = href && fromString ? fromString(href) : null
+    if (!isApplication() || !url || (url.$ !== 'Just' && url.$ !== 0)) return init(args)
+
+    const getUrl = _Browser_getUrl
+    _Browser_getUrl = () => url.a
+    try {
+      return init(args)
+    } finally {
+      _Browser_getUrl = getUrl
+    }
+  }
 
   const wrapDomNode = (node) => {
     const dummyNode = document.createElement("div")
@@ -272,7 +290,7 @@ if (import.meta.hot) {
     let tryFirstRender = !!swappingInstance
 
     const hookedInit = (args) => {
-      const initialStateTuple = init(args)
+      const initialStateTuple = swappingInstance ? initWithInitialUrl(init, args, swappingInstance.initialHref) : init(args)
       if (swappingInstance) {
         let oldModel = swappingInstance.lastState
         const newModel = initialStateTuple.a
