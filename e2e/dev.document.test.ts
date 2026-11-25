@@ -41,7 +41,10 @@ describe('Browser.document', () => {
     test('does not perform HMR but reload the page when editing initial state', async () => {
       const { page } = example
       await page.getByLabel('Clickable').click()
+      // The new initial state shows up before the page reloads too
+      const reloaded = page.waitForEvent('load')
       await example.amend('src/Hello.elm', 'through vite-plugin-elm', 'via the plugin')
+      await reloaded
       await page.getByText('via the plugin').waitFor()
       expect(await navigationType(page)).toBe('reload')
       expect(await page.getByText("I'm clicked").count()).toBe(0)
