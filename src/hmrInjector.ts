@@ -94,6 +94,10 @@ if (import.meta.hot) {
     const instance = {
       id, path, domNode, flags, portSubscribes, portSends,
       portNames: [],
+      // How the program builds its view, which differs between kinds of programs. None for Html as main
+      program: null,
+      // What Browser.application listens to URL changes with
+      urlListeners: [],
       lastState: null,
       // What init gave at first, to tell whether init has changed on swapping
       initResult: null,
@@ -102,6 +106,33 @@ if (import.meta.hot) {
       isWorker: false
     }
     return instances[id] = instance
+  }
+
+  // Browser.application listens to URL changes on window with its Browser.Navigation.Key, which a swap replaces in the
+  // model only if the model keeps it. So note the listeners while init runs, to remove them on swapping
+  const noteUrlListeners = (instance, init) => {
+    if (typeof window === 'undefined') return init()
+
+    const ownAddEventListener = Object.prototype.hasOwnProperty.call(window, 'addEventListener')
+    const addEventListener = window.addEventListener
+    window.addEventListener = function (type, listener, options) {
+      if (type === 'popstate' || type === 'hashchange') instance.urlListeners.push([type, listener])
+      return addEventListener.call(this, type, listener, options)
+    }
+    try {
+      return init()
+    } finally {
+      if (ownAddEventListener) {
+        window.addEventListener = addEventListener
+      } else {
+        delete window.addEventListener
+      }
+    }
+  }
+
+  const removeUrlListeners = (instance) => {
+    instance.urlListeners.forEach(([type, listener]) => window.removeEventListener(type, listener))
+    instance.urlListeners = []
   }
 
   const isApplication = () => typeof elmSymbol("elm$browser$Browser$application") !== 'undefined'
@@ -148,7 +179,7 @@ if (import.meta.hot) {
         // There is no document in a Web Worker
         if (domNode === null && typeof document !== 'undefined') domNode = document.body
         initializingInstance = registerInstance(domNode, flags, path, portSubscribes, portSends)
-        elm = originalInit(args)
+        elm = noteUrlListeners(initializingInstance, () => originalInit(args))
         initializingInstance.portNames = Object.keys(elm.ports || {})
         // Platform.worker owns no DOM, so leave the page as it is on swapping
         if (initializingInstance.isWorker) initializingInstance.domNode = null
@@ -180,13 +211,22 @@ if (import.meta.hot) {
         containerNode.appendChild(nodeForEmbed)
         args.node = nodeForEmbed
       }
+      removeUrlListeners(instance)
+      instance.swappedProgram = null
       let elm
       try {
-        elm = m.init(args)
+        elm = noteUrlListeners(instance, () => m.init(args))
       } catch (e) {
         // Nothing is left on the page, as the DOM is cleared and the old instance is stopped
         console.error("[vite-plugin-elm] Hot-swapping " + instance.path + " failed. Refreshes page", e)
         import.meta.hot.invalidate("Hot-swapping " + instance.path + " failed: " + e.message)
+        swappingInstance = null
+        return
+      }
+
+      if (instance.swappedProgram !== instance.program) {
+        console.log("[vite-plugin-elm] The kind of program has changed. Refreshes page")
+        import.meta.hot.invalidate("The kind of program of " + instance.path + " has changed")
         swappingInstance = null
         return
       }
@@ -326,10 +366,6 @@ if (import.meta.hot) {
   }
 
   const getAt = (keyPath, obj) => keyPath.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, obj)
-  const removeNavKeyListeners = (navKey) => {
-    window.removeEventListener("popstate", navKey.value)
-    window.navigator.userAgent.indexOf("Trident") < 0 || window.removeEventListener("hashchange", navKey.value)
-  }
 
   const initialize = _Platform_initialize
   _Platform_initialize = (flagDecoder, args, init, update, subscriptions, stepperBuilder) => {
@@ -337,12 +373,24 @@ if (import.meta.hot) {
     // _Platform_worker passes \`function() { return function() {} }\` while every
     // Browser program passes \`function(sendToApp, initialModel)\`
     if (instance) instance.isWorker = stepperBuilder.length === 0
+    const program = String(stepperBuilder)
+    if (initializingInstance) {
+      initializingInstance.program = program
+    } else if (swappingInstance) {
+      swappingInstance.swappedProgram = program
+    }
 
     const hookedInit = (args) => {
       const initialStateTuple = swappingInstance ? initWithInitialUrl(init, args, swappingInstance.initialHref) : init(args)
       if (swappingInstance) {
         let oldModel = swappingInstance.lastState
         const newModel = initialStateTuple.a
+
+        // Another kind of program, which the swap reloads the page for, may not take the kept state
+        if (program !== swappingInstance.program) {
+          initialStateTuple.b = elmSymbol("elm$core$Platform$Cmd$none")
+          return initialStateTuple
+        }
 
         const initResult = swappingInstance.initResult
         if (!equalIgnoringFunctions(appModel(newModel), initResult.model) || !equalIgnoringFunctions(initialStateTuple.b, initResult.cmd)) {
@@ -366,7 +414,6 @@ if (import.meta.hot) {
           } else if (newKeyLoc.keypath.toString() !== oldKeyLoc.keypath.toString()) {
             error = "the location of the Browser.Navigation.Key in the model has changed.";
           } else {
-            removeNavKeyListeners(oldKeyLoc.value)
             const parentKeyPath = oldKeyLoc.keypath.slice(0, -1)
             const lastSegment = oldKeyLoc.keypath.slice(-1)[0]
             const oldParent = getAt(parentKeyPath, oldModel)

@@ -41,6 +41,20 @@ describe('Platform.worker', () => {
       await page.getByText('Pong from Elm worker to the main thread').waitFor()
     })
 
+    test('reloads the page when the kind of program changes', async () => {
+      const { page } = example
+      await page.getByText('Browser.element bundled with Platform.worker').waitFor()
+      const reloaded = page.waitForEvent('load')
+      await example.amend(
+        'src/WorkerCompanion.elm',
+        'Browser.element\n        { init = \\_ -> ( (), Cmd.none )\n        , update = \\_ model -> ( model, Cmd.none )\n        , view = \\_ -> p [] [ text "Browser.element bundled with Platform.worker" ]',
+        'Browser.document\n        { init = \\_ -> ( (), Cmd.none )\n        , update = \\_ model -> ( model, Cmd.none )\n        , view = \\_ -> { title = "Companion", body = [ p [] [ text "Browser.document bundled with Platform.worker" ] ] }',
+      )
+      await reloaded
+      expect(await navigationType(page)).toBe('reload')
+      await page.getByText('Browser.document bundled with Platform.worker').waitFor()
+    })
+
     test('performs HMR for editing an element bundled with a worker', async () => {
       const { page } = example
       await page.getByText('Browser.element bundled with Platform.worker').waitFor()
