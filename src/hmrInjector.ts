@@ -94,7 +94,8 @@ if (import.meta.hot) {
     const instance = {
       id, path, domNode, flags, portSubscribes, portSends,
       lastState: null,
-      initialState: null,
+      // What init gave at first, to tell whether init has changed on swapping
+      initResult: null,
       // The URL Browser.application started with, which its init is given again on swapping
       initialHref: typeof location !== 'undefined' ? location.href : null,
       isWorker: false
@@ -262,6 +263,30 @@ if (import.meta.hot) {
   }
 
   const isDebuggerModel = (model) => model && (model.hasOwnProperty("expando") || model.hasOwnProperty("expandoModel")) && model.hasOwnProperty("state")
+  // The model of the app in what init gives, which the debugger wraps as running
+  const appModel = (model) => isDebuggerModel(model) ? model.state.a : model
+
+  // Elm's equality, except that every function equals any other, as the new code has its own. Without recursion,
+  // since a list nests as deep as it is long
+  const equalIgnoringFunctions = (x, y) => {
+    const pairs = [[x, y]]
+    const compared = new Map()
+    while (pairs.length > 0) {
+      const [a, b] = pairs.pop()
+      if (a === b || (typeof a === "function" && typeof b === "function") || (a !== a && b !== b)) continue
+      if (typeof a !== "object" || typeof b !== "object" || a === null || b === null) return false
+      if (compared.get(a) === b) continue
+      compared.set(a, b)
+
+      const keys = Object.keys(a)
+      if (keys.length !== Object.keys(b).length) return false
+      for (const key of keys) {
+        if (!Object.prototype.hasOwnProperty.call(b, key)) return false
+        pairs.push([a[key], b[key]])
+      }
+    }
+    return true
+  }
 
   const findNavKey = (rootModel) => {
     const queue = []
@@ -306,9 +331,10 @@ if (import.meta.hot) {
         let oldModel = swappingInstance.lastState
         const newModel = initialStateTuple.a
 
-        if (JSON.stringify(newModel.state?.a ? newModel.state.a : newModel) !== swappingInstance.initialState) {
-          console.log("[vite-plugin-elm] Initial state seems to be updated. Refreshes page")
-          import.meta.hot.invalidate("Initial state of " + swappingInstance.path + " seems to be updated")
+        const initResult = swappingInstance.initResult
+        if (!equalIgnoringFunctions(appModel(newModel), initResult.model) || !equalIgnoringFunctions(initialStateTuple.b, initResult.cmd)) {
+          console.log("[vite-plugin-elm] Initial state or command seems to be updated. Refreshes page")
+          import.meta.hot.invalidate("Initial state or command of " + swappingInstance.path + " seems to be updated")
           // Until the page reloads, show what the new init gives rather than the kept state, which may not fit the new code
           initialStateTuple.b = elmSymbol("elm$core$Platform$Cmd$none")
           return initialStateTuple
@@ -343,7 +369,7 @@ if (import.meta.hot) {
         initialStateTuple.b = elmSymbol("elm$core$Platform$Cmd$none")
       } else {
         initializingInstance.lastState = initialStateTuple.a
-        initializingInstance.initialState = JSON.stringify(initialStateTuple.a.state?.a ? initialStateTuple.a.state.a : initialStateTuple.a)
+        initializingInstance.initResult = { model: appModel(initialStateTuple.a), cmd: initialStateTuple.b }
       }
 
       return initialStateTuple
