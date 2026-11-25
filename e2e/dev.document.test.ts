@@ -50,6 +50,30 @@ describe('Browser.document', () => {
       expect(await page.getByText("I'm clicked").count()).toBe(0)
     })
 
+    test('compiles again when elm.json changes, like by `elm install`', async () => {
+      const { page } = example
+      await page.getByLabel('Clickable').click()
+      // elm/json is only an indirect dependency, so Elm doesn't let Hello.elm import it
+      await example.amend('src/Hello.elm', 'import Message', 'import Json.Encode\nimport Message')
+      await example.amend(
+        'src/Hello.elm',
+        'text "This page works with Browser.document"',
+        'text (Json.Encode.encode 0 (Json.Encode.string "Encoded with elm/json"))',
+      )
+      const overlay = page.locator('vite-error-overlay .window')
+      await overlay.waitFor()
+      expect(await overlay.textContent()).toContain('elm/json')
+
+      await example.amend(
+        'elm.json',
+        '"hmsk/elm-vite-plugin-helper": "1.0.1"\n        },\n        "indirect": {\n            "elm/json": "1.1.3",',
+        '"hmsk/elm-vite-plugin-helper": "1.0.1",\n            "elm/json": "1.1.3"\n        },\n        "indirect": {',
+      )
+      await page.getByText('"Encoded with elm/json"').waitFor()
+      expect(await navigationType(page)).toBe('navigate')
+      await page.getByText("I'm clicked").waitFor()
+    })
+
     test('shows a compile error from Elm on the overlay', async () => {
       await example.amend('src/Hello.elm', 'through vite-plugin-elm', 'through vite-plugin-elm" ++ 1 ++ "')
       // Locators reach into the shadow root of the overlay
