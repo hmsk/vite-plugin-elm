@@ -1,5 +1,15 @@
+import type { Page } from 'playwright'
 import { beforeEach, describe, expect, test } from 'vitest'
 import { navigationType, useExample } from './example.js'
+
+// Browser.application listens to popstate on window to tell the app that the URL has changed
+const popstateListeners = async (page: Page) => {
+  const cdp = await page.context().newCDPSession(page)
+  const { result } = await cdp.send('Runtime.evaluate', { expression: 'window' })
+  const { listeners } = await cdp.send('DOMDebugger.getEventListeners', { objectId: result.objectId! })
+  await cdp.detach()
+  return listeners.filter(({ type }) => type === 'popstate').length
+}
 
 const example = useExample({ command: 'dev' })
 
@@ -81,6 +91,27 @@ describe('Browser.application', () => {
       await page.waitForURL(/\?from-init$/)
       expect(await navigationType(page)).toBe('reload')
       await page.getByText('Clicked 0 times').waitFor()
+    })
+
+    test('leaves only the swapped app listening to URL changes, even without the key in its model', async () => {
+      const { page } = example
+      // Drop the key from the model, and the page reloads as init gives another state
+      await example.amend(
+        'src/Application.elm',
+        '( model, Nav.pushUrl model.key (Url.toString url) )',
+        '( model, Cmd.none )',
+      )
+      await example.amend('src/Application.elm', '{ key : Nav.Key\n    , url : Url', '{ url : Url')
+      const reloaded = page.waitForEvent('load')
+      await example.amend('src/Application.elm', '{ key = key, url = url, clicks = 0 }', '{ url = url, clicks = 0 }')
+      await reloaded
+      await page.getByText('Fragment: none').waitFor()
+      expect(await popstateListeners(page)).toBe(1)
+
+      await example.amend('src/Application.elm', 'navigate within the app', 'Replaced Message')
+      await page.getByText('Replaced Message').waitFor()
+      expect(await navigationType(page)).toBe('reload')
+      expect(await popstateListeners(page)).toBe(1)
     })
 
     test('keeps the app working while a compile error is shown, then performs HMR for the fix', async () => {
