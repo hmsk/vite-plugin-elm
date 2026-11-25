@@ -2,11 +2,20 @@
   "name": "vite-plugin-elm",
   "version": "4.0.0",
   "description": "Compile Elm with vite",
-  "exports": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./client.d.ts"
+    }
+  },
   "type": "module",
   "files": [
     "dist",
-    "!dist/**/*.test.*"
+    "!dist/**/*.test.*",
+    "client.d.ts"
   ],
   "types": "./dist/index.d.ts",
   "scripts": {
