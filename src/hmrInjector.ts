@@ -300,11 +300,13 @@ if (import.meta.hot) {
           import.meta.hot.invalidate()
         }
 
-        if (typeof elmSymbol("elm$browser$Browser$application") !== "undefined" && typeof elmSymbol("elm$browser$Browser$Navigation") !== "undefined") {
+        if (isApplication()) {
           const oldKeyLoc = findNavKey(oldModel)
           const newKeyLoc = findNavKey(newModel)
           let error = null
-          if (newKeyLoc === null) {
+          if (oldKeyLoc === null && newKeyLoc === null) {
+            // The app keeps no Browser.Navigation.Key, so there is none to replace
+          } else if (newKeyLoc === null) {
             error = "could not find Browser.Navigation.Key in the new app model"
           } else if (oldKeyLoc === null) {
             error = "could not find Browser.Navigation.Key in the old app model"

@@ -33,6 +33,23 @@ describe('Browser.application', () => {
       expect(await navigationType(page)).toBe('navigate')
       await page.getByText('Clicked 1 times').waitFor()
     })
+
+    test('keeps handling URL changes after HMR', async () => {
+      const { page } = example
+      await example.amend('src/Application.elm', 'navigate within the app', 'Replaced Message')
+      await page.getByText('Replaced Message').waitFor()
+      await page.getByText('Move').click()
+      await page.getByText('Fragment: moved').waitFor()
+      // Rendering the swapped app again shows what its model has, not what the old app left on the page
+      await page.getByLabel('Count').click()
+      await page.getByText('Clicked 1 times').waitFor()
+      expect(await page.getByText('Fragment: moved').count()).toBe(1)
+      await page.goBack()
+      await page.getByText('Fragment: none').waitFor()
+      await page.getByLabel('Count').click()
+      await page.getByText('Clicked 2 times').waitFor()
+      expect(await page.getByText('Fragment: none').count()).toBe(1)
+    })
   })
 
   describe('assets', () => {
