@@ -51,6 +51,21 @@ describe('Browser.application', () => {
       expect(await page.getByText('Fragment: none').count()).toBe(1)
     })
 
+    test('reloads the page when the swapped view fails with the kept state', async () => {
+      const { page } = example
+      for (const _ of [1, 2, 3]) await page.getByLabel('Count').click()
+      await page.getByText('Clicked 3 times').waitFor()
+      // Fails only with the state from before HMR, as init gives 0. No other test clicks 3 times, in case its page
+      // gets this version before the file is put back
+      await example.amend(
+        'src/Application.elm',
+        'text ("Clicked " ++ String.fromInt model.clicks ++ " times")',
+        'text (if model.clicks == 3 then Debug.todo "view fails" else "Clicked " ++ String.fromInt model.clicks ++ " times")',
+      )
+      await page.getByText('Clicked 0 times').waitFor()
+      expect(await navigationType(page)).toBe('reload')
+    })
+
     test('keeps the app working while a compile error is shown, then performs HMR for the fix', async () => {
       const { page } = example
       await page.getByLabel('Count').click()
