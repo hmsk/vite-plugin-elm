@@ -58,14 +58,17 @@ if (import.meta.hot) {
     data.instances = instances
     data.uid = uid
 
-    _Scheduler_binding = () => _Scheduler_fail(new Error("[vite-plugin-elm] Inactive Elm instance."))
+    // Vite disposes before the next version is compiled, which may fail, so keep running until that one takes over
+    data.deactivate = () => {
+      _Scheduler_binding = () => _Scheduler_fail(new Error("[vite-plugin-elm] Inactive Elm instance."))
 
-    if (cancellers.length) {
-      console.log("[vite-plugin-elm] Killing " + cancellers.length + " running processes...")
-      try {
-        cancellers.forEach((cancel) => { cancel() })
-      } catch (e) {
-        console.warn("[vite-plugin-elm] Kill process error: ", e.message)
+      if (cancellers.length) {
+        console.log("[vite-plugin-elm] Killing " + cancellers.length + " running processes...")
+        try {
+          cancellers.forEach((cancel) => { cancel() })
+        } catch (e) {
+          console.warn("[vite-plugin-elm] Kill process error: ", e.message)
+        }
       }
     }
   })
@@ -370,6 +373,12 @@ if (import.meta.hot) {
   })
 
   const swapInstances = (Elm) => {
+    const deactivatePrevious = import.meta.hot.data && import.meta.hot.data.deactivate
+    if (deactivatePrevious) {
+      delete import.meta.hot.data.deactivate
+      deactivatePrevious()
+    }
+
     const removedInstances = []
     Object.entries(instances).forEach(([id, instance]) => {
       if (instance.domNode === null || instance.domNode.parentNode) {

@@ -50,6 +50,21 @@ describe('Browser.application', () => {
       await page.getByText('Clicked 2 times').waitFor()
       expect(await page.getByText('Fragment: none').count()).toBe(1)
     })
+
+    test('keeps the app working while a compile error is shown, then performs HMR for the fix', async () => {
+      const { page } = example
+      await page.getByLabel('Count').click()
+      await example.amend('src/Application.elm', '"navigate within the app"', '"navigate within the app" ++ 1')
+      await page.locator('vite-error-overlay .window').waitFor()
+      await page.keyboard.press('Escape')
+      await page.getByText('Move').click()
+      await page.getByText('Fragment: moved').waitFor()
+      await example.amend('src/Application.elm', '"navigate within the app" ++ 1', '"Fixed Message"')
+      await page.getByText('Fixed Message').waitFor()
+      expect(await navigationType(page)).toBe('navigate')
+      await page.getByText('Clicked 1 times').waitFor()
+      expect(await page.getByText('Fragment: moved').count()).toBe(1)
+    })
   })
 
   describe('assets', () => {
