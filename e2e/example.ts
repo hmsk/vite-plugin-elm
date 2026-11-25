@@ -110,6 +110,8 @@ export const useExample = ({ command, env }: Options) => {
   let context: BrowserContext
   let page: Page
   const originals = new Map<string, string>()
+  // Called on a message from Vite's dev server that it has handled a changed file
+  let onFileHandled: (() => void) | undefined
 
   beforeAll(async () => {
     dir = await copyExample()
@@ -125,6 +127,11 @@ export const useExample = ({ command, env }: Options) => {
     await context.tracing.start({ screenshots: true, snapshots: true })
     page = await context.newPage()
     page.setDefaultTimeout(10_000)
+    page.on('websocket', (webSocket) =>
+      webSocket.on('framereceived', ({ payload }) => {
+        if (typeof payload === 'string' && /"type":"(update|full-reload|error)"/.test(payload)) onFileHandled?.()
+      }),
+    )
   })
 
   afterEach(async ({ task }) => {
@@ -133,11 +140,19 @@ export const useExample = ({ command, env }: Options) => {
     await context.tracing.stop(
       task.result?.state === 'fail' ? { path: join(repositoryDir, 'test-results', `${name}.zip`) } : {},
     )
-    await context.close()
-    for (const [file, content] of originals) {
-      await writeFile(file, content)
+    if (originals.size > 0) {
+      for (const [file, content] of originals) {
+        await writeFile(file, content)
+      }
+      originals.clear()
+      // Otherwise the page of the next test may get the edited version, and then the update of putting it back
+      await new Promise<void>((resolve) => {
+        onFileHandled = resolve
+        setTimeout(resolve, 5_000)
+      })
+      onFileHandled = undefined
     }
-    originals.clear()
+    await context.close()
   })
 
   afterAll(async () => {

@@ -53,19 +53,34 @@ describe('Browser.application', () => {
 
     test('reloads the page when the swapped view fails with the kept state', async () => {
       const { page } = example
-      for (const _ of [1, 2, 3]) await page.getByLabel('Count').click()
-      await page.getByText('Clicked 3 times').waitFor()
-      // Fails only with the state from before HMR, as init gives 0. No other test clicks 3 times, in case its page
-      // gets this version before the file is put back
+      await page.getByLabel('Count').click()
+      await page.getByText('Clicked 1 times').waitFor()
+      // Fails only with the state from before HMR, as init gives 0
       const reloaded = page.waitForEvent('load')
       await example.amend(
         'src/Application.elm',
         'text ("Clicked " ++ String.fromInt model.clicks ++ " times")',
-        'text (if model.clicks == 3 then Debug.todo "view fails" else "Clicked " ++ String.fromInt model.clicks ++ " times")',
+        'text (if model.clicks == 1 then Debug.todo "view fails" else "Clicked " ++ String.fromInt model.clicks ++ " times")',
       )
       await reloaded
       await page.getByText('Clicked 0 times').waitFor()
       expect(await navigationType(page)).toBe('reload')
+    })
+
+    test('reloads the page when init gives another command', async () => {
+      const { page } = example
+      await page.getByLabel('Count').click()
+      await page.getByText('Clicked 1 times').waitFor()
+      const reloaded = page.waitForEvent('load')
+      await example.amend(
+        'src/Application.elm',
+        '( { key = key, url = url, clicks = 0 }, Cmd.none )',
+        '( { key = key, url = url, clicks = 0 }, Nav.replaceUrl key "?from-init" )',
+      )
+      await reloaded
+      await page.waitForURL(/\?from-init$/)
+      expect(await navigationType(page)).toBe('reload')
+      await page.getByText('Clicked 0 times').waitFor()
     })
 
     test('keeps the app working while a compile error is shown, then performs HMR for the fix', async () => {
