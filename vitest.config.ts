@@ -8,6 +8,11 @@ export default defineConfig({
           name: 'unit',
           // Keep out compiled tests in dist
           include: ['src/**/*.test.ts'],
+          typecheck: {
+            enabled: true,
+            include: ['client.test-d.ts'],
+            tsconfig: './tsconfig.client.json',
+          },
         },
       },
       {

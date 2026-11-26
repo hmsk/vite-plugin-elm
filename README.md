@@ -47,6 +47,31 @@ Elm.Hello.init({
 
 You can explore the [`/example`](/example) directory to experiment with an actual Vite project. Additionally, [this functional website](https://github.com/hmsk/hmsk.me) can serve as a helpful resource to learn how to use it effectively.
 
+### TypeScript
+
+Add the types of importing `.elm` files, e.g. in `src/vite-env.d.ts`:
+
+```ts
+/// <reference types="vite-plugin-elm/client" />
+```
+
+Or in `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["vite/client", "vite-plugin-elm/client"]
+  }
+}
+```
+
+Elm's types don't reach JavaScript, so annotate what a port sends:
+
+```ts
+const app = Elm.Hello.init({ node: document.getElementById('root') })
+app.ports.sendMessage.subscribe((message: string) => console.log(message))
+```
+
 ### Supported versions
 
 | vite-plugin-elm | Vite         | Elm              | Node.js                       |
